@@ -1,4 +1,4 @@
-errorHandler = (err, req, res, next) => {
+const errorHandler = (err, req, res, next) => {
     //console.log(err)
     let code = err.code ?? err.statusCode ?? 500
     let detail = err.detail ?? err.details ?? null

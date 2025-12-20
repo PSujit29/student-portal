@@ -140,4 +140,12 @@ vite.config.ts.timestamp-*
 
 
 
-/public/uploads
+./public
+./public/uploads
+
+./node_modules
+./node_modules/**/node_modules
+./pnpm-lock.yaml
+./yarn.lock
+./package-lock.json
+

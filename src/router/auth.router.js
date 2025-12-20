@@ -18,9 +18,14 @@ const registerRules = Joi.object({
     "dob": Joi.date()
 })
 
+const loginRules = Joi.object({
+    "email": Joi.string().email().required(true),
+    "password": Joi.string().min(8).required(true)
+})
+
 authRouter.post("/register", bodyValidator(registerRules), authCtrl.registerUser)
 authRouter.get("/activate/:userID", authCtrl.activateUser)
-authRouter.post("/login", authCtrl.loginUser)
+authRouter.post("/login", bodyValidator(loginRules), authCtrl.loginUser)
 authRouter.get("/logout", authCtrl.logoutUser)
 
 authRouter.get('/me', checkLogin(['admin']), authCtrl.getLoggedInUser)

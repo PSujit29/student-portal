@@ -8,7 +8,7 @@ const errorHandler = (err, req, res, next) => {
     //TODO: handling other errors and implementation
 
     res.status(code).json({
-        error: detail,
+        errors: detail,
         message: message,
         status: status,
     })

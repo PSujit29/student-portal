@@ -3,9 +3,10 @@ class AuthController {
     // handle user registration
     registerUser = (req, res, next) => {
         let data = req.body;
+        
 
         res.json({
-            data: {data},
+            data: { data },
             message: "user register success",
             status: "TEST_REGISTER_USER"
         })
@@ -34,6 +35,13 @@ class AuthController {
             data: null,
             message: "test logout user",
             status: "TEST_LOGOUT_USER"
+        })
+    }
+    getLoggedInUser = (req, res, next) => {
+        res.json({
+            data: null,
+            message: "test get logged in user",
+            status: "TEST_GET_LOGGED_IN_USER"
         })
     }
 }

@@ -1,6 +1,7 @@
 const authRouter = require("express").Router()
 const AuthController = require("../controllers/auth.controller")
 const checkLogin = require("../middlewares/auth.middleware")
+const uploader = require("../middlewares/uploader.middleware")
 const bodyValidator = require("../middlewares/validator.middleware")
 const Joi = require("joi")
 
@@ -23,7 +24,7 @@ const loginRules = Joi.object({
     "password": Joi.string().min(8).required(true)
 })
 
-authRouter.post("/register", bodyValidator(registerRules), authCtrl.registerUser)
+authRouter.post("/register", uploader().single('profilePicture'),bodyValidator(registerRules), authCtrl.registerUser)
 authRouter.get("/activate/:userID", authCtrl.activateUser)
 authRouter.post("/login", bodyValidator(loginRules), authCtrl.loginUser)
 authRouter.get("/logout", authCtrl.logoutUser)

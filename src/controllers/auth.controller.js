@@ -1,9 +1,23 @@
+const bcrypt = require('bcryptjs')
 class AuthController {
 
     // handle user registration
     registerUser = (req, res, next) => {
         let data = req.body;
-        
+        if(req.file){
+            data.image = req.file //adding filename to the data 
+        }
+
+        if(data.password !== data.confirmPassword){
+            return res.status(400).json({
+                data: null,
+                message: "password and confirm password do not match",
+                status: "REGISTER_PASSWORD_MISMATCH"
+            })
+        }
+
+        data.password = bcrypt.hashSync(data.password, 12) //passwordhash
+        delete data.confirmPassword // remove onfirm passwod from the data
 
         res.json({
             data: { data },
@@ -11,6 +25,8 @@ class AuthController {
             status: "TEST_REGISTER_USER"
         })
     }
+
+    
     activateUser = (req, res, next) => {
         let params = req.params
         let query = req.query

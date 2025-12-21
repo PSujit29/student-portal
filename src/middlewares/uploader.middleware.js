@@ -25,10 +25,10 @@ const uploader = () => {
         const allowedExtension = ["jpg", "png", "jpeg", "webp", "gif", "svg", "bmp"]
 
         const exts = file.originalname.split(".").pop().toLowerCase().trim()
-        if (allowedExtension.includes(exts)) {
-            cb(null, true)
+        if (!allowedExtension.includes(exts)) {
+            cb({ code: 422, message: "unsupported file format", status: "FILE_FORMAT_ERROR" })
         }
-        cb({ code: 422, message: "unsupported file format", status: "FILE_FORMAT_ERROR" })
+        cb(null, true)
     }
 
     return multer({

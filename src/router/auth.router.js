@@ -29,6 +29,6 @@ authRouter.get("/activate/:userID", authCtrl.activateUser)
 authRouter.post("/login", bodyValidator(loginRules), authCtrl.loginUser)
 authRouter.get("/logout", authCtrl.logoutUser)
 
-authRouter.get('/me', checkLogin(['admin']), authCtrl.getLoggedInUser)
+// authRouter.get('/me', checkLogin(['admin']), authCtrl.getLoggedInUser)
 
 module.exports = authRouter 

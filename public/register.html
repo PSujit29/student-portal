@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Student Portal - Register</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+
+<body>
+    <h1>Register (Test Page)</h1>
+    <form id="register-form">
+        <label>
+            Name:
+            <input type="text" name="name" required />
+        </label>
+        <br />
+        <label>
+            Email:
+            <input type="email" name="email" required />
+        </label>
+        <br />
+        <label>
+            Password:
+            <input type="password" name="password" required minlength="8" />
+        </label>
+        <br />
+        <label>
+            Confirm Password:
+            <input type="password" name="confirmPassword" required minlength="8" />
+        </label>
+        <br />
+        <label>
+            Role:
+            <select name="role">
+                <option value="student" selected>Student</option>
+                <option value="teacher">Teacher</option>
+                <option value="admin">Admin</option>
+            </select>
+        </label>
+        <br />
+        <label>
+            Phone:
+            <input type="text" name="phone" />
+        </label>
+        <br />
+        <label>
+            Address:
+            <input type="text" name="address" required />
+        </label>
+        <br />
+        <label>
+            Date of Birth:
+            <input type="date" name="dob" />
+        </label>
+        <br />
+        <button type="submit">Register</button>
+    </form>
+
+    <p>
+        Already registered?
+        <a href="/login.html">Proceed to login</a>
+    </p>
+
+    <pre id="result"></pre>
+
+    <script>
+        const form = document.getElementById('register-form');
+        const result = document.getElementById('result');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const payload = Object.fromEntries(formData.entries());
+
+            try {
+                const res = await fetch('/studentportal/v1/auth/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    window.location.href = '/register-success.html';
+                } else {
+                    result.textContent = JSON.stringify(data, null, 2);
+                }
+            } catch (err) {
+                result.textContent = 'Network error: ' + err.message;
+            }
+        });
+    </script>
+</body>
+
+</html>

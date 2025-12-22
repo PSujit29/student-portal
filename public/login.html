@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Student Portal - Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+
+<body>
+    <h1>Login (Test Page)</h1>
+    <form id="login-form">
+        <label>
+            Email:
+            <input type="email" name="email" required />
+        </label>
+        <br />
+        <label>
+            Password:
+            <input type="password" name="password" required minlength="8" />
+        </label>
+        <br />
+        <button type="submit">Login</button>
+    </form>
+
+    <pre id="result"></pre>
+
+    <p>
+        For now this just calls <code>/studentportal/v1/auth/login</code> and shows the
+        JSON response. Later you'll replace this with real JWT/cookie logic.
+    </p>
+
+    <a href="/register.html">Go to Register</a>
+
+    <script>
+        const form = document.getElementById('login-form');
+        const result = document.getElementById('result');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(form);
+            const payload = Object.fromEntries(formData.entries());
+
+            try {
+                const res = await fetch('/studentportal/v1/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+
+                const data = await res.json();
+                result.textContent = JSON.stringify(data, null, 2);
+            } catch (err) {
+                result.textContent = 'Network error: ' + err.message;
+            }
+        });
+    </script>
+</body>
+
+</html>

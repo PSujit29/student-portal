@@ -1,9 +1,10 @@
 const bcrypt = require('bcryptjs');
 const userModel = require('../models/user.model');
 const emailService = require("../services/mail.service");
-const { AppConfig } = require("../config/app.config");
+const { AppConfig, FRONTEND_URL } = require("../config/app.config");
 const jwt = require("jsonwebtoken");
 const { generateActivationToken } = require('../utility/token');
+require("dotenv").config()
 
 class AuthController {
 
@@ -18,7 +19,7 @@ class AuthController {
         const token = generateActivationToken(user);
 
         const activationLink =
-            `${AppConfig.FRONTEND_URL}/activate?token=${token}`;
+            `${FRONTEND_URL}/activate?token=${token}`;
 
         const html = `
   <h2>Activate your account</h2>
@@ -31,10 +32,10 @@ class AuthController {
   <p>This link expires in 15 minutes.</p>
 `;
 
-        await emailService.sendMail({
+        await emailService.sendEmail({
             to: user.email,
             subject: 'Activate your account',
-            html
+            message: html
         });
 
 

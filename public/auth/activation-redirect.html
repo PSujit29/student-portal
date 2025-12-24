@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Activating Account...</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .card {
+            background: #fff;
+            padding: 24px 28px;
+            border-radius: 6px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, .1);
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+        }
+
+        h1 {
+            font-size: 1.4rem;
+            margin-top: 0;
+        }
+
+        p {
+            margin: 8px 0;
+            font-size: .95rem;
+        }
+
+        .msg.success {
+            color: #0a7c2f;
+        }
+
+        .msg.error {
+            color: #b00020;
+        }
+
+        a.button {
+            display: inline-block;
+            margin-top: 16px;
+            padding: 10px 18px;
+            background: #007bff;
+            color: #fff;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="card">
+        <h1>Activating your account...</h1>
+        <p id="status" class="msg">Please wait.</p>
+        <a id="loginLink" class="button" href="/auth/login.html" style="display:none;">Go to Login</a>
+    </div>
+
+    <script>
+        async function activate() {
+            const statusEl = document.getElementById('status');
+            const loginLink = document.getElementById('loginLink');
+
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get('token');
+
+            if (!token) {
+                statusEl.textContent = 'Activation token is missing.';
+                statusEl.className = 'msg error';
+                return;
+            }
+
+            try {
+                const res = await fetch('/studentportal/auth/activate?token=' + encodeURIComponent(token));
+                const data = await res.json().catch(() => ({}));
+
+                if (!res.ok) {
+                    statusEl.textContent = data.message || 'Activation failed.';
+                    statusEl.className = 'msg error';
+                } else {
+                    statusEl.textContent = data.message || 'Account activated successfully!';
+                    statusEl.className = 'msg success';
+                    loginLink.style.display = 'inline-block';
+                }
+            } catch (err) {
+                statusEl.textContent = 'Network error. Please try again later.';
+                statusEl.className = 'msg error';
+            }
+        }
+
+        activate();
+    </script>
+</body>
+
+</html>

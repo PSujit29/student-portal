@@ -1,10 +1,10 @@
+require("dotenv").config()
 const bcrypt = require('bcryptjs');
 const userModel = require('../models/user.model');
 const emailService = require("../services/mail.service");
 const { AppConfig, FRONTEND_URL } = require("../config/app.config");
 const jwt = require("jsonwebtoken");
 const { generateActivationToken } = require('../utility/token');
-require("dotenv").config()
 
 class AuthController {
 
@@ -18,8 +18,9 @@ class AuthController {
 
         const token = generateActivationToken(user);
 
-        const activationLink =
-            `${FRONTEND_URL}/activate?token=${token}`;
+        // Send user to a simple HTML page that will
+        // call the real /studentportal/auth/activate API in the background
+        const activationLink = `${FRONTEND_URL}/activation-redirect.html?token=${token}`;
 
         const html = `
   <h2>Activate your account</h2>

@@ -17,7 +17,9 @@ const smtpConfig = {
   port: process.env.SMTP_PORT,
   from: process.env.SMTP_FROM
 }
-const FRONTEND_URL = "http://localhost:9005";
+// Base URL where simple frontend HTML pages are served
+// Static files are served from ./public, so /auth maps to public/auth
+const FRONTEND_URL = "http://localhost:9005/auth";
 
 module.exports = {
   dbConfig,

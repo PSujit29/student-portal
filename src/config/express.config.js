@@ -12,7 +12,7 @@ app.use(express.urlencoded({ limit: "5mb", extended: true }))
 app.use(express.static("./public"))
 app.use("/assets", express.static("./public/uploads"))
 
-app.use('/studentportal/v1', router)
+app.use('/studentportal/', router)
 
 app.use((req, res, next) => {
     next({ code: 404, message: "page not found", status: "PAGE_NOT_FOUND_ERR" })

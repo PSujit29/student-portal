@@ -1,18 +1,23 @@
-const bcrypt = require('bcryptjs');
-const userModel = require('../models/user.model');
-const emailService = require("../services/mail.service");
-const { AppConfig } = require("../config/app.config");
-const jwt = require("jsonwebtoken")
-
+const bcrypt = require('bcryptjs')
 class AuthController {
 
     // handle user registration
     registerUser = (req, res, next) => {
         let data = req.body;
-        console.log(data)
-        // i guess user role is default to applicant at this phaase while storing in database.
-        const user = new userModel(data)
-        user.save()
+        if(req.file){
+            data.image = req.file //adding filename to the data 
+        }
+
+        if(data.password !== data.confirmPassword){
+            return res.status(400).json({
+                data: null,
+                message: "password and confirm password do not match",
+                status: "REGISTER_PASSWORD_MISMATCH"
+            })
+        }
+
+        data.password = bcrypt.hashSync(data.password, 12) //passwordhash
+        delete data.confirmPassword // remove confirm passwod from the data
 
         res.json({
             data: { data },

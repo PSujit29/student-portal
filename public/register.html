@@ -74,7 +74,7 @@
             const payload = Object.fromEntries(formData.entries());
 
             try {
-                const res = await fetch('/studentportal/v1/auth/register', {
+                const res = await fetch('/studentportal/auth/register', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload),

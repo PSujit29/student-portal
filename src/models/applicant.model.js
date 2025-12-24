@@ -23,7 +23,7 @@ const applicantSchema = new mongoose.Schema({
     //     required: true,
     //     min: 8
     // },
-    // applicantID: ref(user), //?
+    // applicantID: ref(user), //? 
     userId: {
         type: mongoose.Types.ObjectId,
         ref: "User",

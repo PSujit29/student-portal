@@ -3,6 +3,7 @@ const userModel = require('../models/user.model');
 const emailService = require("../services/mail.service");
 const { AppConfig } = require("../config/app.config");
 const jwt = require("jsonwebtoken");
+const { generateActivationToken } = require('../utility/token');
 
 class AuthController {
 
@@ -14,6 +15,29 @@ class AuthController {
         const user = new userModel(data)
         const savedUser = await user.save()
 
+        const token = generateActivationToken(user);
+
+        const activationLink =
+            `${AppConfig.FRONTEND_URL}/activate?token=${token}`;
+
+        const html = `
+  <h2>Activate your account</h2>
+  <p>Hello ${user.name},</p>
+  <p>Click the button below to activate your account:</p>
+  <a href="${activationLink}"
+     style="padding:10px 20px;background:#007bff;color:#fff;text-decoration:none;">
+     Activate Account
+  </a>
+  <p>This link expires in 15 minutes.</p>
+`;
+
+        await emailService.sendMail({
+            to: user.email,
+            subject: 'Activate your account',
+            html
+        });
+
+
         res.json({
             data: {
                 _id: savedUser._id,
@@ -24,41 +48,38 @@ class AuthController {
         })
     }
 
+    async activateUser(req, res, next) {
+        const { token } = req.query;
+        if (!token) {
+            return res.status(400).json({ message: 'Activation token required' });
+        }
 
-    activateUser = (req, res, next) => {
-        let params = req.params
-        let query = req.query
+        let payload;
+        try {
+            payload = jwt.verify(token, process.env.ACTIVATION_SECRET);
+        } catch {
+            return res.status(401).json({ message: 'Invalid or expired token' });
+        }
 
-        const activationLink = `${AppConfig.FRONTEND_URL}/activate/${params.userID}?token=${query.token}`;
+        if (payload.type !== 'activation') {
+            return res.status(403).json({ message: 'Invalid token type' });
+        }
 
-        const html = `
-            <h2>Activate your account</h2>
-            <p>Dear ${query.name || 'User'},</p>
-            <p>Thank you for registering with our Student Portal.</p>
-            <p>Please click the button below to activate your account for further processing:</p>
-            <p>
-                <a href="${activationLink}" style="display:inline-block;padding:10px 20px;background:#007bff;color:#ffffff;text-decoration:none;border-radius:4px;">
-                    Activate Account
-                </a>
-            </p>
-            <p>If you did not request this, please ignore this email.</p>
-        `;
+        const user = await userModel.findById(payload.uid);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
 
-        emailService.sendMail({
-            to: query.email,
-            subject: 'Activate your Portal account',
-            html
-        });
+        if (user.isActive) {
+            return res.json({ message: 'Account already activated' });
+        }
 
-        res.json({
-            data: {
-                params,
-                query
-            },
-            message: `user activated for uid ${params.userID}`,
-            status: "TEST_ACTIVATE_USER"
-        })
-    }
+        user.isActive = true;
+        await user.save();
+
+        res.json({ message: 'Account activated successfully' });
+    };
+
 
     async loginUser(req, res, next) {
         try {
@@ -79,7 +100,7 @@ class AuthController {
             }
 
             //jwt
-            const accessToken = jwt.sign({ sub: userDetail._id, type: "Bearer" }, AppConfig.jwtSecret, { expiresIn: "30d" }) 
+            const accessToken = jwt.sign({ sub: userDetail._id, type: "Bearer" }, AppConfig.jwtSecret, { expiresIn: "30d" })
 
             res.json({
                 data: accessToken,
@@ -92,6 +113,7 @@ class AuthController {
             next(exception)
         }
     }
+
     logoutUser = (req, res, next) => {
         res.json({
             data: null,
@@ -101,7 +123,7 @@ class AuthController {
     }
     getLoggedInUser = (req, res, next) => {
         res.json({
-            data: null,
+            data: req.loggedInUser,
             message: "test get logged in user",
             status: "TEST_GET_LOGGED_IN_USER"
         })

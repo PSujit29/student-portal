@@ -28,13 +28,21 @@ const checkLogin = function (allowedRoles = null) {
                 _id: userDetail._id,
                 name: userDetail.name,
                 email: userDetail.email,
+                role: userDetail.role,
             }
-            if (!allowedRoles || userRoles.APPLICANT) {
-                next()
+            if (!allowedRoles) {
+                return next();
             }
-            else {
-                throw { code: 403, message: "Access Denied", status: "NOT_ALLOWED" }
+            if (!user.isActive) {
+                throw new Error('Account not activated');
             }
+            const userRole = req.loggedInUser?.role;
+            if (allowedRoles.includes(userRole)) {
+                return next();
+            } else {
+                throw { code: 403, message: "Forbidden: You do not have the required permissions.", status: "NOT_ALLOWED" }
+            }
+
         } catch (exception) {
             // console.log(exception)
             next(exception)

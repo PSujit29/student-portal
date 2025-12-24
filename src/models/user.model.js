@@ -25,6 +25,10 @@ const userSchema = new mongoose.Schema({
         enum: Object.values(userRoles),
         default: userRoles.APPLICANT
     },
+    isActive: {
+        type:Boolean,
+        default:false
+    },
     // createdBy: {
     //     type: mongoose.Types.ObjectId,
     //     ref: "user",

@@ -21,9 +21,9 @@ const loginRules = Joi.object({
 
 authRouter.post("/register",bodyValidator(registerRules), authCtrl.registerUser)
 authRouter.post("/login", bodyValidator(loginRules), authCtrl.loginUser)
-authRouter.get("/activate/:userID", checkLogin(),authCtrl.activateUser)
+authRouter.get("/activate/",authCtrl.activateUser)
 authRouter.get("/logout", authCtrl.logoutUser)
 
-authRouter.get('/me', authCtrl.getLoggedInUser)
+authRouter.get('/me', checkLogin(), authCtrl.getLoggedInUser)
 
 module.exports = authRouter 

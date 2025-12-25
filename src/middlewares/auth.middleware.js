@@ -29,13 +29,17 @@ const checkLogin = function (allowedRoles = null) {
                 name: userDetail.name,
                 email: userDetail.email,
                 role: userDetail.role,
+                isActive: userDetail.isActive,
             }
+
+            if (!userDetail.isActive) {
+                throw { code: 403, message: "Account not activated", status: "ACCOUNT_INACTIVE" }
+            }
+
             if (!allowedRoles) {
                 return next();
             }
-            if (!user.isActive) {
-                throw new Error('Account not activated');
-            }
+
             const userRole = req.loggedInUser?.role;
             if (allowedRoles.includes(userRole)) {
                 return next();

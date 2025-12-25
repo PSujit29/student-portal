@@ -1,25 +1,28 @@
-const bcrypt = require('bcryptjs')
+const applicantModel = require("../models/applicant.model");
+
 class AdmissionController {
-
-    async register(req, res, next) {
-        let data = req.data;
-        console.log(data)
-        data.password = bcrypt.hashSync(data.password)
-
-        res.json({
-            data: { data },
-            message: "user register success",
-            status: "TEST_REGISTER_USER"
-        })
-    }
-
     async apply(req, res, next) {
-        let data = req.data;
-        res.json({
-            data: { data },
-            message: "successful admission admission recieved",
-            status: "TEST_APPLY_ADMISSION"
-        })
+        try {
+            const user = req.loggedInUser; 
+            const data = {
+                ...req.body,
+                userId: user._id,
+            };
+
+            const applicant = new applicantModel(data);
+            const savedApplicant = await applicant.save();
+
+            res.json({
+                data: {
+                    _id: savedApplicant._id,
+                    data: savedApplicant,
+                },
+                message: `successful admission application received from ${user.name}`,
+                status: "TEST_APPLY_ADMISSION",
+            });
+        } catch (err) {
+            next(err);
+        }
     }
 
 }

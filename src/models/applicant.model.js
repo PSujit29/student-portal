@@ -51,7 +51,10 @@ const applicantSchema = new mongoose.Schema({
         max: 200,
         required: true
     },
-    dob: Date,
+    dob: {
+        type: Date,
+        required: true,
+    }
     // image: String, // may be its too early??
 
 

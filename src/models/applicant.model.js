@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { Genders, Programmes } = require("../config/constants.config");
+const { Genders, Programme } = require("../config/constants.config");
 
 const applicantSchema = new mongoose.Schema({
 
@@ -57,7 +57,7 @@ const applicantSchema = new mongoose.Schema({
     },
     programme: {
         type: String,
-        enum: Object.values(Programmes),
+        enum: Object.values(Programme),
         required: true
     }
 

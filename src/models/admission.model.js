@@ -8,10 +8,6 @@ const admissionSchema = new mongoose.Schema({
         ref: "Applicant",
         required: true
     },
-    applicationId: {
-        type: String,
-        // required: true,
-    },
     status: {
         type: String,
         enum: Object.values(ApplicationStatus),

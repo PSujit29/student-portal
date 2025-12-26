@@ -6,7 +6,7 @@ errorHandler = (err, req, res, next) => {
     // Prefer explicit HTTP status fields; do NOT use generic `err.code`
     // because libraries (like Mongo) use it for non-HTTP numeric codes (e.g. 11000).
     let code = err.statusCode ?? err.status ?? 500
-    let detail = err.detail ?? err.details ?? null
+    let detail = err.detail ?? err.details ?? (err.error instanceof Error ? err.error.message : err.error) ?? null
     let message = err.message ?? "APPLICATION ERR..."
     let status = err.status ?? "APPLICATION_ERR"
 

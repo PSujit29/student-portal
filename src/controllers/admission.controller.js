@@ -198,16 +198,22 @@ class AdmissionController {
         }
     }
 
-    /*
-    3) Update application status (admin-only)
-    
-    PATCH /studentportal/admission/applications/:id/status with body { status: "accepted" | "rejected" }.
-    Logic (MVP):
-    Validate allowed transitions (e.g., only from UNDER_REVIEW → ACCEPTED/REJECTED).
-    If ACCEPTED: optionally flip user role from APPLICANT to STUDENT (this is a nice real-world touch).
-    Optionally send email notification via your mail service (can be TODO for now).
-    Why: this is the core of “admin managing admissions” and forces you to think about domain rules.}
-    */
+    async updateApplicationStatus(req, res, next) {
+        /*
+        PATCH /studentportal/admission/applications/:id/status with body { status: "accepted" | "rejected" }.
+        Validate allowed transitions (e.g., only from UNDER_REVIEW → ACCEPTED/REJECTED).
+        If ACCEPTED: optionally flip user role from APPLICANT to STUDENT (this is a nice real-world touch).
+        Optionally send email notification via your mail service (can be TODO for now).
+        */
+        try {
+
+            
+            
+
+        } catch (exception) {
+            next(exception);
+        }
+    }
 }
 
 module.exports = AdmissionController

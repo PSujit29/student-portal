@@ -1,6 +1,6 @@
 const admissionRouter = require("express").Router()
 const Joi = require("joi")
-const { UserRoles, Genders, Programme } = require("../config/constants.config.js")
+const { UserRoles, Genders, Programme, ApplicationStatus } = require("../config/constants.config.js")
 const AdmissionController = require("../controllers/admission.controller.js")
 const checkLogin = require("../middlewares/auth.middleware.js")
 const bodyValidator = require("../middlewares/validator.middleware")
@@ -16,13 +16,17 @@ const applicationRules = Joi.object({
     "programme": Joi.string().valid(...Object.values(Programme))
 })
 
+const reviewRules = Joi.object({
+    "status": Joi.string().valid(...Object.values(ApplicationStatus)).default(ApplicationStatus.UNDER_REVIEW)
+})
+
 admissionRouter.post('/apply', checkLogin([UserRoles.APPLICANT]), bodyValidator(applicationRules), admissionCtrl.apply)
 admissionRouter.get('/my-application', checkLogin(), admissionCtrl.getMyApplicationStatus)
 
 admissionRouter.route('/applications')
     .get(checkLogin([UserRoles.ADMIN]), admissionCtrl.getAllApplications)
     .get('/:applicationId', checkLogin([UserRoles.ADMIN]), admissionCtrl.getApplicationDetailById)
-    .patch('/:applicationId/status', checkLogin([UserRoles.ADMIN]), admissionCtrl.updateApplicationById)
+    .patch('/:applicationId/status', checkLogin([UserRoles.ADMIN]), bodyValidator(reviewRules), admissionCtrl.updateApplicationStatus)
 
 
 module.exports = admissionRouter

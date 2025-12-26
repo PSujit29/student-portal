@@ -24,9 +24,17 @@ const Programme = {
     BIT: "bit"
 }
 
+const Relations = {
+    FATHER: "father",
+    MOTHER: 'mother',
+    SIBLINGS: 'sibling',
+    GUARDIAN: 'guardian',
+}
+
 module.exports = {
     Genders,
     UserRoles,
     ApplicationStatus,
-    Programme
+    Programme,
+    Relations
 }

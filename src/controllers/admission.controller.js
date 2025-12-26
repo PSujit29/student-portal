@@ -2,6 +2,7 @@ const ApplicantModel = require("../models/applicant.model");
 const ApplicationModel = require("../models/admission.model");
 const { ApplicationStatus } = require("../config/constants.config");
 
+
 class AdmissionController {
 
     async apply(req, res, next) {
@@ -91,6 +92,122 @@ class AdmissionController {
             next(err);
         }
     }
+
+
+    async getAllApplications(req, res, next) {
+
+        try {
+            const page = +req.query.page || 1;
+            const limit = +req.query.limit || 20;
+            const skip = (page - 1) * limit;
+
+            const filter = {};
+            if (req.query.status) {
+                filter.status = req.query.status;
+            }
+
+            // Returns a list of applications, joining Applicant + Admission (using populate) with basic fields: applicant name (from User or Applicant), programme, status, createdAt.
+            const data = await ApplicationModel.find(filter)
+                .populate({
+                    path: "applicantId",
+                    select: "programme userId",
+                    populate: {
+                        path: "userId",
+                        select: "name email"
+                    }
+                })
+                .sort({ createdAt: -1 })
+                .skip(skip)
+                .limit(limit);
+
+            // reshape response (important)
+            const result = data.map(app => ({
+                applicationId: app._id,
+                status: app.status,
+                createdAt: app.createdAt,
+                programme: app.applicantId?.programme,
+                applicantName: app.applicantId?.userId?.name,
+                applicantEmail: app.applicantId?.userId?.email
+            }));
+
+            res.json({
+                data: result,
+                page,
+                limit,
+                message: "List All Applications",
+                status: "TEST_LIST_ALL_APPLICATIONS"
+            });
+
+        } catch (err) {
+            next(err);
+        }
+
+
+    }
+
+    async getApplicationDetailById(req, res, next) {
+        /*{    GET /studentportal/admission/applications/:applicationId
+        */
+        try {
+            const { applicationId } = req.params;
+            if (!applicationId) {
+                throw { code: 400, message: "applicationId missing", status: "APPLICATIONID_MISSING" };
+            }
+
+            const data = await ApplicationModel.findById(applicationId)
+                .populate({
+                    path: "applicantId",
+                    select: "programme gender phone address dob userId",
+                    populate: {
+                        path: "userId",
+                        select: "name email"
+                    }
+                })
+                .lean();
+
+            if (!data) {
+                throw { code: 404, message: "application not found", status: "APPLICATION_NOT_FOUND" };
+            }
+
+            // reshape response
+            const result = {
+                applicationId: data._id,
+                status: data.status,
+                isSubmitted: data.isSubmitted,
+                createdAt: data.createdAt,
+
+                applicant: {
+                    name: data.applicantId.userId.name,
+                    email: data.applicantId.userId.email,
+                    programme: data.applicantId.programme,
+                    gender: data.applicantId.gender,
+                    phone: data.applicantId.phone,
+                    address: data.applicantId.address,
+                    dob: data.applicantId.dob
+                }
+            };
+
+            res.json({
+                data: result,
+                message: "List Application by ID",
+                status: "TEST_LIST_APPLICATION_BY_ID"
+            });
+
+        } catch (exception) {
+            next(exception)
+        }
+    }
+
+    /*
+    3) Update application status (admin-only)
+    
+    PATCH /studentportal/admission/applications/:id/status with body { status: "accepted" | "rejected" }.
+    Logic (MVP):
+    Validate allowed transitions (e.g., only from UNDER_REVIEW → ACCEPTED/REJECTED).
+    If ACCEPTED: optionally flip user role from APPLICANT to STUDENT (this is a nice real-world touch).
+    Optionally send email notification via your mail service (can be TODO for now).
+    Why: this is the core of “admin managing admissions” and forces you to think about domain rules.}
+    */
 }
 
 module.exports = AdmissionController

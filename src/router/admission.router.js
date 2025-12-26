@@ -13,10 +13,13 @@ const applicationRules = Joi.object({
     "phone": Joi.string().default(null),
     "address": Joi.string().min(2).max(200).required(true),
     "dob": Joi.date().required(true),
-    "programme":Joi.string().valid(...Object.values(Programme))
+    "programme": Joi.string().valid(...Object.values(Programme))
 })
 
 admissionRouter.post('/apply', checkLogin([UserRoles.APPLICANT]), bodyValidator(applicationRules), admissionCtrl.apply)
 admissionRouter.get('/my-application', checkLogin(), admissionCtrl.getMyApplicationStatus)
+admissionRouter.get('/applications', checkLogin([UserRoles.ADMIN]), admissionCtrl.getAllApplications)
+admissionRouter.get('/applications/:applicationId', checkLogin([UserRoles.ADMIN]), admissionCtrl.getApplicationDetailById)
+
 
 module.exports = admissionRouter

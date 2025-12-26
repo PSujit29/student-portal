@@ -18,8 +18,11 @@ const applicationRules = Joi.object({
 
 admissionRouter.post('/apply', checkLogin([UserRoles.APPLICANT]), bodyValidator(applicationRules), admissionCtrl.apply)
 admissionRouter.get('/my-application', checkLogin(), admissionCtrl.getMyApplicationStatus)
-admissionRouter.get('/applications', checkLogin([UserRoles.ADMIN]), admissionCtrl.getAllApplications)
-admissionRouter.get('/applications/:applicationId', checkLogin([UserRoles.ADMIN]), admissionCtrl.getApplicationDetailById)
+
+admissionRouter.route('/applications')
+    .get(checkLogin([UserRoles.ADMIN]), admissionCtrl.getAllApplications)
+    .get('/:applicationId', checkLogin([UserRoles.ADMIN]), admissionCtrl.getApplicationDetailById)
+    .patch('/:applicationId/status', checkLogin([UserRoles.ADMIN]), admissionCtrl.updateApplicationById)
 
 
 module.exports = admissionRouter

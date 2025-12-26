@@ -1,6 +1,7 @@
 const ApplicantModel = require("../models/applicant.model");
 const ApplicationModel = require("../models/admission.model");
-const { ApplicationStatus } = require("../config/constants.config");
+const StudentModel = require("../models/student.model");
+const { ApplicationStatus, UserRoles } = require("../config/constants.config");
 
 
 class AdmissionController {
@@ -51,6 +52,7 @@ class AdmissionController {
     }
 
 
+    
     async getMyApplicationStatus(req, res, next) {
         try {
             const user = req.loggedInUser;
@@ -206,9 +208,76 @@ class AdmissionController {
         Optionally send email notification via your mail service (can be TODO for now).
         */
         try {
+            const { applicationId } = req.params;
+            if (!applicationId) {
+                throw { code: 400, message: "applicationId missing", status: "APPLICATIONID_MISSING" };
+            }
 
-            
-            
+            const application = await ApplicationModel.findById(applicationId)
+                .populate({ path: "applicantId", populate: { path: "userId" } });
+
+            if (!application) {
+                throw { code: 404, message: "Application does not exist", status: "APPLICATION_DOES_NOT_EXIST" };
+            }
+
+            const currentStatus = application.status;
+            const newStatus = req.body.status;
+
+            if (!newStatus) {
+                throw { code: 400, message: "No action selected", status: "NO_ACTION_SELECTED" };
+            }
+
+            const allowedTargets = [ApplicationStatus.ACCEPTED, ApplicationStatus.REJECTED];
+            const isValidTransition =
+                currentStatus === ApplicationStatus.UNDER_REVIEW &&
+                allowedTargets.includes(newStatus);
+
+            if (!isValidTransition) {
+                throw { code: 409, message: "Invalid status change request", status: "INVALID_STATUS_CHANGE_REQUEST" };
+            }
+
+            application.status = newStatus;
+
+            if (newStatus === ApplicationStatus.ACCEPTED) {
+                const user = application.applicantId.userId;
+
+                if (user.role !== UserRoles.STUDENT) {
+                    user.role = UserRoles.STUDENT;
+                    await user.save();
+                }
+
+                const existingStudent = await StudentModel.findOne({ userId: user._id });
+
+                if (!existingStudent) {
+                    const registrationNumber = `REG-${Date.now()}`;
+
+                    const studentPayload = {
+                        userId: user._id,
+                        admissionId: application._id,
+                        registrationNumber,
+                        programme: application.applicantId.programme
+                    };
+
+                    await StudentModel.create(studentPayload);
+                }
+            }
+
+            await application.save();
+
+            const responseDto = {
+                applicationId: application._id,
+                status: application.status,
+                applicantName: application.applicantId.userId.name,
+                applicantEmail: application.applicantId.userId.email,
+                programme: application.applicantId.programme
+            };
+
+            res.json({
+                success: true,
+                message: "Application status updated successfully",
+                data: responseDto,
+                status: "APPLICATION_STATUS_UPDATED"
+            });
 
         } catch (exception) {
             next(exception);

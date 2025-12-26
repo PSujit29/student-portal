@@ -17,16 +17,15 @@ const applicationRules = Joi.object({
 })
 
 const reviewRules = Joi.object({
-    "status": Joi.string().valid(...Object.values(ApplicationStatus)).default(ApplicationStatus.UNDER_REVIEW)
+    "status": Joi.string().valid(...Object.values(ApplicationStatus)).required()
 })
 
 admissionRouter.post('/apply', checkLogin([UserRoles.APPLICANT]), bodyValidator(applicationRules), admissionCtrl.apply)
 admissionRouter.get('/my-application', checkLogin(), admissionCtrl.getMyApplicationStatus)
 
-admissionRouter.route('/applications')
-    .get(checkLogin([UserRoles.ADMIN]), admissionCtrl.getAllApplications)
-    .get('/:applicationId', checkLogin([UserRoles.ADMIN]), admissionCtrl.getApplicationDetailById)
-    .patch('/:applicationId/status', checkLogin([UserRoles.ADMIN]), bodyValidator(reviewRules), admissionCtrl.updateApplicationStatus)
+admissionRouter.get('/applications', checkLogin([UserRoles.ADMIN]), admissionCtrl.getAllApplications)
+admissionRouter.get('/applications/:applicationId', checkLogin([UserRoles.ADMIN]), admissionCtrl.getApplicationDetailById)
+admissionRouter.patch('/applications/:applicationId/status', checkLogin([UserRoles.ADMIN]), bodyValidator(reviewRules), admissionCtrl.updateApplicationStatus)
 
 
 module.exports = admissionRouter

@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { Genders } = require("../config/constants.config");
+const { Genders, Programmes } = require("../config/constants.config");
 
 const applicantSchema = new mongoose.Schema({
 
@@ -54,7 +54,13 @@ const applicantSchema = new mongoose.Schema({
     dob: {
         type: Date,
         required: true,
+    },
+    programme: {
+        type: String,
+        enum: Object.values(Programmes),
+        required: true
     }
+
     // image: String, // may be its too early??
 
 
@@ -67,6 +73,6 @@ const applicantSchema = new mongoose.Schema({
 });
 
 
-const applicantModel = mongoose.model("Applicant", applicantSchema);
+const ApplicantModel = mongoose.model("Applicant", applicantSchema);
 
-module.exports = applicantModel
+module.exports = ApplicantModel

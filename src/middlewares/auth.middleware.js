@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const { userRoles } = require("../config/constants.config");
+const { UserRoles } = require("../config/constants.config");
 const { AppConfig } = require("../config/app.config")
 const UserModel = require("../models/user.model");
 

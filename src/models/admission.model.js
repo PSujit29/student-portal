@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const { applicationStatus } = require("../config/constants.config");
+const { ApplicationStatus } = require("../config/constants.config");
 
 
 const admissionSchema = new mongoose.Schema({
@@ -14,8 +14,8 @@ const admissionSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: Object.values(applicationStatus),
-        default: applicationStatus.UNDER_REVIEW
+        enum: Object.values(ApplicationStatus),
+        default: ApplicationStatus.UNDER_REVIEW
     },
     isSubmitted: {
         type: Boolean,
@@ -39,6 +39,6 @@ const admissionSchema = new mongoose.Schema({
 });
 
 
-const applicationModel = mongoose.model("Admission", admissionSchema);
+const ApplicationModel = mongoose.model("Admission", admissionSchema);
 
-module.exports = applicationModel
+module.exports = ApplicationModel

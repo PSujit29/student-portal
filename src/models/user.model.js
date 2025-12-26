@@ -1,6 +1,6 @@
 const mongoose = require("mongoose");
-const { userRoles } = require("../config/constants.config");
-// const { Genders, userRoles } = require("../config/constants.config");
+const { UserRoles } = require("../config/constants.config");
+// const { Genders, UserRoles } = require("../config/constants.config");
 
 const userSchema = new mongoose.Schema({
     // _id, name, email, password
@@ -22,8 +22,8 @@ const userSchema = new mongoose.Schema({
     },
     role:{
         type: String,
-        enum: Object.values(userRoles),
-        default: userRoles.APPLICANT
+        enum: Object.values(UserRoles),
+        default: UserRoles.APPLICANT
     },
     isActive: {
         type:Boolean,
@@ -47,6 +47,6 @@ const userSchema = new mongoose.Schema({
 });
 
 
-const userModel = mongoose.model("User", userSchema);
+const UserModel = mongoose.model("User", userSchema);
 
-module.exports = userModel
+module.exports = UserModel

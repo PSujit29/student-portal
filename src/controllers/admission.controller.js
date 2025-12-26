@@ -1,4 +1,4 @@
-const applicantModel = require("../models/applicant.model");
+const ApplicantModel = require("../models/applicant.model");
 
 class AdmissionController {
     async apply(req, res, next) {
@@ -9,8 +9,7 @@ class AdmissionController {
                 userId: user._id,
             };
             //throw error if user has already applied
-            const applicantId = await applicantModel.findOne({ userId: data.userId });
-            console.log(applicantId)
+            const applicantId = await ApplicantModel.findOne({ userId: data.userId });
             if (applicantId) {
                 throw {
                     code: 400,
@@ -19,7 +18,7 @@ class AdmissionController {
                     status: "RE_APPLY_ERROR"
                 };
             }
-            const applicant = new applicantModel(data);
+            const applicant = new ApplicantModel(data);
             const savedApplicant = await applicant.save();
 
             res.json({

@@ -1,6 +1,6 @@
 const admissionRouter = require("express").Router()
 const Joi = require("joi")
-const { userRoles, Genders } = require("../config/constants.config.js")
+const { UserRoles, Genders } = require("../config/constants.config.js")
 const AdmissionController = require("../controllers/admission.controller.js")
 const checkLogin = require("../middlewares/auth.middleware.js")
 const bodyValidator = require("../middlewares/validator.middleware")
@@ -15,7 +15,7 @@ const applicationRules = Joi.object({
     "dob": Joi.date().required(true)
 })
 
-admissionRouter.post('/apply', checkLogin([userRoles.APPLICANT]), bodyValidator(applicationRules), admissionCtrl.apply)
+admissionRouter.post('/apply', checkLogin([UserRoles.APPLICANT]), bodyValidator(applicationRules), admissionCtrl.apply)
 
 
 module.exports = admissionRouter

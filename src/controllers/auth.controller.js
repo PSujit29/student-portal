@@ -1,6 +1,6 @@
 require("dotenv").config()
 const bcrypt = require('bcryptjs');
-const userModel = require('../models/user.model');
+const UserModel = require('../models/user.model');
 const emailService = require("../services/mail.service");
 const { AppConfig, FRONTEND_URL } = require("../config/app.config");
 const jwt = require("jsonwebtoken");
@@ -13,7 +13,7 @@ class AuthController {
         let data = req.body;
         data.password = bcrypt.hashSync(data.password)
         // i guess user role is default to applicant at this phaase while storing in database.
-        const user = new userModel(data)
+        const user = new UserModel(data)
         const savedUser = await user.save()
 
         const token = generateActivationToken(user);
@@ -67,7 +67,7 @@ class AuthController {
             return res.status(403).json({ message: 'Invalid token type' });
         }
 
-        const user = await userModel.findById(payload.uid);
+        const user = await UserModel.findById(payload.uid);
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -89,7 +89,7 @@ class AuthController {
             const { email, password } = req.body
 
             //user verification
-            const userDetail = await userModel.findOne({
+            const userDetail = await UserModel.findOne({
                 email: email
             })
             if (!userDetail) {

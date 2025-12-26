@@ -4,21 +4,21 @@ const Genders = {
     OTHERS: "others"
 }
 
-const userRoles = {
+const UserRoles = {
     ADMIN: "admin",
     STUDENT: "student",
     TEACHER: "teacher",
     APPLICANT: "applicant"
 }
 
-const applicationStatus = {
+const ApplicationStatus = {
     DRAFT: "draft",
     UNDER_REVIEW: "under_review",
     ACCEPTED: "accepted",
     REJECTED: "rejected"
 }
 
-const programme = {
+const Programme = {
     CSIT: "csit",
     BCA: "bca",
     BIT: "bit"
@@ -26,7 +26,7 @@ const programme = {
 
 module.exports = {
     Genders,
-    userRoles,
-    applicationStatus,
-    programme
+    UserRoles,
+    ApplicationStatus,
+    Programme
 }

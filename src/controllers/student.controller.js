@@ -4,8 +4,8 @@ class StudentController {
     async getMyProfile(req, res, next) {
         // student get /me 
         try {
-            let user = req.loggedInUser;
-            console.log({ user })
+            // let user = req.loggedInUser;
+            // console.log({ user })
 
             res.json({
                 success: true,

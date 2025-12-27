@@ -1,6 +1,6 @@
-# Student Portal (Backend)
+# Student Portal (Backend‑First)
 
-This is my personal learning project: a backend for a college **student portal + simple LMS**. I am using it to understand how real-world systems handle authentication, roles, admission workflows, and basic student management.
+This is my personal learning project: a **backend‑first** MERN backend for a college‑style student portal. It is **not** a finished LMS; the goal is to learn realistic backend architecture (auth, roles, admission flows, student domain) before building any serious frontend.
 
 ## What I Am Trying to Learn
 
@@ -11,29 +11,46 @@ This is my personal learning project: a backend for a college **student portal +
 
 ## Current Scope (MVP Backend)
 
-Right now I am focused on a small but realistic MVP, not on building everything at once.
+Right now the focus is a small but realistic MVP backend. Some features are intentionally missing (no refresh tokens, no full LMS) while I stabilise the core flows.
 
 - **Authentication & Accounts**
 
-  - User registration with hashed passwords (bcrypt)
-  - Email-style activation using a separate activation token
-  - Login that returns a JWT access token
-  - Auth middleware to protect routes and check user roles
+  - User registration with hashed passwords (bcryptjs)
+  - Email-style account activation using a dedicated activation JWT and a simple activation redirect page under `public/auth/`
+  - Login that returns a JWT access token signed with an app secret
+  - Auth middleware that:
+    - Verifies the JWT and attaches `loggedInUser` to the request
+    - Enforces `isActive` and role-based access (`applicant`, `student`, `teacher`, `admin`)
 
-- **Admission / Applicant Flow (Design + Models)**
+- **Admission / Applicant Flow (Implemented)**
 
-  - `User` model with roles (applicant, student, teacher, admin)
-  - `Applicant` model linked to a user for admission details
-  - `Admission` model for application status (under review, approved, rejected)
-  - MVP admission flow written down in `admission.txt` and partially implemented
+  - `User` model with roles (`APPLICANT`, `STUDENT`, `TEACHER`, `ADMIN`) and `isActive`
+  - `Applicant` model linked to `User` for admission information (programme, dob, address, etc.)
+  - `Admission` model that tracks each application with a status enum (`draft`, `under_review`, `accepted`, `rejected`)
+  - Applicant endpoints:
+    - Apply once for admission (creates `Applicant` + `Admission` with `UNDER_REVIEW`)
+    - View own application status
+  - Admin endpoints:
+    - List all applications with pagination and optional status filter
+    - View a single application with joined applicant + user info
+    - Update an application status from `UNDER_REVIEW` to `ACCEPTED` or `REJECTED`
+    - On `ACCEPTED`, automatically promote the user role from `APPLICANT` to `STUDENT` and create a `Student` record with a generated registration number
+
+- **Student Domain (Initial)**
+
+  - `Student` model linked to `User` and `Admission` (registration number, programme, batch, semester)
+  - Router split between:
+    - Student self routes (`/me`) guarded by `STUDENT` role
+    - Admin-only routes for listing and inspecting students
+  - Controllers for student routes are currently thin and will be evolved once the loading logic and DTOs are finalised
 
 - **Validation & Error Handling**
 
-  - Request body validation using Joi
-  - Central error-handling middleware with consistent JSON responses
+  - Request body validation using Joi per-route schemas
+  - Central error-handling middleware with consistent JSON error contracts
 
 - **Simple Frontend for Testing**
-  - Minimal HTML pages served from `public/` to test register and login
+  - Minimal static HTML pages served from `public/` to manually test register/login/activation while the real frontend does not exist yet
 
 ## Tech Stack
 
@@ -68,9 +85,10 @@ The default entry file is `index.js`.
 
 ## Roadmap (What I Plan Next)
 
-- Finish the full applicant admission flow (apply, review, approve/reject)
-- Add basic student portal views (profile, notices, simple dashboard)
-- Start very small LMS features (courses, assignments, submissions)
-- Improve documentation as the project grows
+- Harden the admission flow (better status transition rules, optional email notifications on decision, basic auditing)
+- Flesh out the student profile API (DTOs for `/me`, admin list/detail, controlled updates to academic fields)
+- Add small, focused “student portal” features (notices, simple dashboard data) on top of the existing models
+- Only after the backend stabilises: start minimal LMS-style entities (courses, enrolments, assignments)
+- Keep updating this README as the architecture evolves
 
 This project is mainly for learning and experimentation, so the design may change as I understand more about real college workflows and backend best practices.

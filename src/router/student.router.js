@@ -1,14 +1,20 @@
 const stuRouter = require("express").Router()
-
-const StudentController = require("../controllers/student.controller")
+const { UserRoles } = require("../config/constants.config")
 const checkLogin = require("../middlewares/auth.middleware")
-const stuCtrl = new StudentController
+const stuCtrl = require("../controllers/student.controller")
 
-stuRouter.post("/", checkLogin(), stuCtrl.admitStudent)
+// for student only
+stuRouter.route('/me')
+    .get(checkLogin([UserRoles.STUDENT]), stuCtrl.getMyProfile)
+    .put(checkLogin([UserRoles.STUDENT]), stuCtrl.updateMyProfile);
 
-stuRouter.route('/:id')
-    .get(checkLogin(), stuCtrl.getStudentDetail)
-    .put(checkLogin(), stuCtrl.updateStudentDetail)
-    .delete(checkLogin(), stuCtrl.deleteStudentDetail)
+// for admin only
+stuRouter.get('/', checkLogin([UserRoles.ADMIN]), stuCtrl.getAllStudents);
 
-module.exports = stuRouter
+stuRouter.route('/:studentId')
+    .get(checkLogin([UserRoles.ADMIN]), stuCtrl.getStudentDetail)
+    .patch(checkLogin([UserRoles.ADMIN]), stuCtrl.updateStudentByAdmin)
+    .delete(checkLogin([UserRoles.ADMIN]), stuCtrl.deleteStudentByAdmin);
+
+
+module.exports = stuRouter 

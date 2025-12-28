@@ -95,7 +95,10 @@ class AuthController {
             if (!userDetail) {
                 throw { code: 404, message: "User not found", status: "USER_NOT_FOUND" }
             }
-
+            //remove login access if account is not activated
+            if (userDetail.isActive === false) {
+                throw { code: 400, message: "User not activated", message: "Activate your account first", status: "USER_NOT_ACTIVATED" }
+            }
             //password verification
             if (!bcrypt.compareSync(password, userDetail.password)) {
                 throw { code: 422, message: "credentials not match", status: "CREDENTIAL_NOT_MACTCHED" }

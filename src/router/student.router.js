@@ -1,5 +1,5 @@
 const stuRouter = require("express").Router()
-const { UserRoles } = require("../config/constants.config")
+const { UserRoles, NonActiveStatuses } = require("../config/constants.config")
 const checkLogin = require("../middlewares/auth.middleware")
 const stuCtrl = require("../controllers/student.controller");
 const getLoggedInStudent = require("../middlewares/student.middleware");
@@ -17,12 +17,15 @@ stuRouter.route('/me')
     .put(checkLogin([UserRoles.STUDENT]), bodyValidator(updationRules), getLoggedInStudent(), stuCtrl.updateMyProfile);
 
 // for admin only
+const deletionRules = Joi.object({
+    reason: Joi.string().valid(...Object.values(NonActiveStatuses)).required(true)
+}).unknown(true);
 stuRouter.get('/', checkLogin([UserRoles.ADMIN]), stuCtrl.getAllStudents);
 
 stuRouter.route('/:studentId')
     .get(checkLogin([UserRoles.ADMIN]), stuCtrl.getStudentDetail)
     .patch(checkLogin([UserRoles.ADMIN]), stuCtrl.updateStudentByAdmin)
-    .delete(checkLogin([UserRoles.ADMIN]), stuCtrl.deleteStudentByAdmin);
+    .delete(checkLogin([UserRoles.ADMIN]), bodyValidator(deletionRules), stuCtrl.deleteStudentByAdmin);
 
 
 module.exports = stuRouter 

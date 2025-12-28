@@ -1,3 +1,4 @@
+const { Status } = require("../config/constants.config");
 const ApplicantModel = require("../models/applicant.model");
 const StudentModel = require("../models/student.model");
 const UserModel = require("../models/user.model");
@@ -12,6 +13,9 @@ class StudentController {
             if (!student) {
                 throw { code: 404, message: "Forbidden Request call", status: "FORBIDDEN_REQUEST_CALL" }
             }
+            if (!(student.status === Status.ACTIVE)) {
+                throw { code: 400, message: "FOrbidden! Inactive student cannot request" }
+            }
             res.json({
                 success: true,
                 data: { student },
@@ -25,6 +29,14 @@ class StudentController {
 
     async updateMyProfile(req, res, next) {
         try {
+            let student = req.loggedInStudent;
+            if (!student) {
+                throw { code: 404, message: "Forbidden Request call", status: "FORBIDDEN_REQUEST_CALL" }
+            }
+            if (!(student.status === Status.ACTIVE)) {
+                throw { code: 400, message: "FOrbidden! Inactive student cannot request" }
+            }
+
             const updatePayload = req.body || {};
 
             let applicantPatch = {};
@@ -73,7 +85,6 @@ class StudentController {
         }
     }
 
-
     async getAllStudents(req, res, next) {
         //admin role checked already at checklogin
         // admin get '/'
@@ -82,7 +93,11 @@ class StudentController {
             const limit = +req.query.limit || 10;
             const skip = (page - 1) * limit;
 
-            const allStudentData = await StudentModel.find()
+            const filter = {
+                status: Status.ACTIVE
+            }
+
+            const allStudentData = await StudentModel.find(filter)
                 .sort({ createdAt: -1 }).skip(skip).limit(limit);
 
             res.json({
@@ -103,7 +118,7 @@ class StudentController {
         try {
             const { studentId } = req.params
             if (!studentId) {
-                throw { code: 404, message: "NO student Id" }
+                throw { code: 4000, message: "NO student Id" }
             }
 
             const student = await StudentModel.findById(studentId);
@@ -141,11 +156,39 @@ class StudentController {
     async deleteStudentByAdmin(req, res, next) {
         // admin delete /:studentId
         try {
-            //todo:
+            const { studentId } = req.params;
+            const reason = req.body;
+
+            if (!studentId) {
+                throw { code: 404, message: "NO student Id" }
+            }
+
+            let studentPatch = {}
+            studentPatch.status = reason.reason;
+
+            const student = await StudentModel.findById(studentId);
+            if (!student) {
+                throw { code: 404, message: "student not found" }
+            }
+            //changing the status to apply student patch
+            await StudentModel.updateOne(
+                { _id: studentId },
+                { $set: studentPatch }
+            );
+
+            //apply user patch
+            const userPatch = { isActive: false }
+            const userID = student.userId;
+            await UserModel.updateOne(
+                { _id: userID },
+                { $set: userPatch }
+            );
+
             res.json({
                 success: true,
-                message: 'deleteStudentByAdmin stub',
-                data: null,
+                studentPatch,
+                userPatch,
+                message: 'deleteStudentByAdmin',
                 status: 'TEST_DELETE_STUDENT_BY_ADMIN'
             });
         } catch (err) {

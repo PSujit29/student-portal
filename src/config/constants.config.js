@@ -16,6 +16,11 @@ const Status = {
     GRADUATED: "graduated", //successfully completed the bachelors or relevant degree
     WITHDRAWN: "withdrawn" //withdrawn mid college
 }
+const NonActiveStatuses = {
+    RESTICATED: "resticated", //removed from college
+    GRADUATED: "graduated", //successfully completed the bachelors or relevant degree
+    WITHDRAWN: "withdrawn" //withdrawn mid college   
+}
 
 const ApplicationStatus = {
     UNDER_REVIEW: "under_review",
@@ -42,5 +47,6 @@ module.exports = {
     ApplicationStatus,
     Programme,
     Relations,
-    Status
+    Status,
+    NonActiveStatuses
 }

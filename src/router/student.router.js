@@ -20,6 +20,7 @@ stuRouter.route('/me')
 const deletionRules = Joi.object({
     reason: Joi.string().valid(...Object.values(NonActiveStatuses)).required(true)
 }).unknown(true);
+
 stuRouter.get('/', checkLogin([UserRoles.ADMIN]), stuCtrl.getAllStudents);
 
 stuRouter.route('/:studentId')

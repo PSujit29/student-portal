@@ -6,12 +6,12 @@ const bodyValidator = (rules) => {
             const data = req.body //fetch data
             // console.log({ data })
 
-            if (!data) {
+            if (!data || Object.keys(data).length === 0) {
                 throw ({ code: 422, message: "NO data found", status: "DATA_NOT_FOUND" })
             }
 
             //validating data assuming the user is dumbass
-            await rules.validateAsync(data, { abortEarly: false })
+            await rules.validateAsync(data, { abortEarly: false, allowUnknown: false })
 
             next() //passing to next scope
         } catch (exception) {
@@ -22,9 +22,12 @@ const bodyValidator = (rules) => {
                 details: {}
             }
             // console.log(exception)
-            exception.details.map((error) => {
-                errorBag.details[error.context.key] = error.message
-            })
+            if (exception.details) {
+                exception.details.forEach(err => {
+                    errorBag.details[err.context.key] = err.message;
+                });
+            }
+
             next(errorBag)
         }
     }

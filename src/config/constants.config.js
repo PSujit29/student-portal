@@ -5,10 +5,16 @@ const Genders = {
 }
 
 const UserRoles = {
-    ADMIN: "admin",
+    ADMIN: "admin", //admin only
     STUDENT: "student",
     TEACHER: "teacher",
-    APPLICANT: "applicant"
+    APPLICANT: "applicant", //for admission process 
+}
+const Status = {
+    ACTIVE: "active", //is currently studying activey
+    RESTICATED: "resticated", //removed from college
+    GRADUATED: "graduated", //successfully completed the bachelors or relevant degree
+    WITHDRAWN: "withdrawn" //withdrawn mid college
 }
 
 const ApplicationStatus = {
@@ -35,5 +41,6 @@ module.exports = {
     UserRoles,
     ApplicationStatus,
     Programme,
-    Relations
+    Relations,
+    Status
 }

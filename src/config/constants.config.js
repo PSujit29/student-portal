@@ -7,14 +7,15 @@ const Genders = {
 const UserRoles = {
     ADMIN: "admin", //admin only
     STUDENT: "student",
-    TEACHER: "teacher",
-    APPLICANT: "applicant", //for admission process 
+    FACULTY: "faculty",
 }
+
 const Status = {
     ACTIVE: "active", //is currently studying activey
-    RESTICATED: "resticated", //removed from college
-    GRADUATED: "graduated", //successfully completed the bachelors or relevant degree
-    WITHDRAWN: "withdrawn" //withdrawn mid college
+    WITHDRAWN: "withdrawn", //withdrawn mid college
+    DISMISSED: "dismissed", //removed from college
+    TRANSFERRED_OUT: "transferred_out", //took transfer
+    GRADUATED: "graduated" //successfully completed the bachelors or relevant degree
 }
 const NonActiveStatuses = {
     RESTICATED: "resticated", //removed from college
@@ -41,6 +42,26 @@ const Relations = {
     GUARDIAN: 'guardian',
 }
 
+// Course status (curriculum lifecycle)
+const CourseStatus = {
+    ACTIVE: "active",
+    ARCHIVED: "archived",
+}
+
+// Enrollment status (per-course student progress)
+const EnrollmentStatus = {
+    ENROLLED: "enrolled",
+    WITHDRAWN: "withdrawn",
+    COMPLETED: "completed",
+    FAILED: "failed",
+}
+
+// Transfer credit status
+const TransferStatus = {
+    ACTIVE: "active",
+    REVOKED: "revoked",
+}
+
 module.exports = {
     Genders,
     UserRoles,
@@ -48,5 +69,8 @@ module.exports = {
     Programme,
     Relations,
     Status,
-    NonActiveStatuses
+    NonActiveStatuses,
+    CourseStatus,
+    EnrollmentStatus,
+    TransferStatus,
 }

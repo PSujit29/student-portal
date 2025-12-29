@@ -8,11 +8,6 @@ const studentSchema = new mongoose.Schema({
         required: true,
         unique: true
     },
-    admissionId: {
-        type: mongoose.Types.ObjectId,
-        ref: "Admission",
-        default: null
-    },
     registrationNumber: {
         type: String,
         unique: true,
@@ -24,42 +19,29 @@ const studentSchema = new mongoose.Schema({
         enum: Object.values(Status),
         default: Status.ACTIVE,
     },
-    programme: {
-        type: String,
-        enum: Object.values(Programme),
-        required: true
-    },
-    batch: {
-        type: String,
-        default: null
-    },
-    semester: {
+    currentSemester: {
         type: Number,
         min: 1,
         max: 8,
-        default: 1
+        default: 1,
     },
-    // guardianInfo: {
-    //     name: {
-    //         type: String,
-    //         default: null
-    //     },
-    //     phone: {
-    //         type: String,
-    //         default: null,
-    //     },
-    //     relation: {
-    //         type: String,
-    //         enum: Object.values(Relations),
-    //         default: null
-    //     }
-    // }
-
+    batch: {
+        type: String,
+        default: null,
+    },
+    expectedGraduationDate: {
+        type: String,
+        default: null
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false,
+    },
 
 }, {
     timestamps: true,
     autoIndex: true,
-    autoCreate: true
+    autoCreate: true,
 });
 
 const StudentModel = mongoose.model("Student", studentSchema);

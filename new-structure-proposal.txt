@@ -1,0 +1,81 @@
+1. User Table (Identity & Security)
+Handles system access. Soft deletes ensure audit logs remain intact if a user is "removed."
+
+    UserID: (_id)
+    Email: Unique string.
+    PasswordHash: Secure string.
+    Role: Enum (student, faculty, admin).
+    IsEmailVerified: Boolean (default false).
+    LastLoginAt: Timestamp (nullable).
+    FailedLoginCount: Integer (default 0).
+    IsDeleted: Boolean (default false).
+    DeletedAt: Timestamp (nullable).
+    UpdatedAt / CreatedAt: Standard audit timestamps.
+
+2. Student Table (Academic Lifecycle)
+Includes status fields to handle transfers and mid-session departures without data loss.
+
+    StudentID (PK): (_id).
+    UserID (FK): Reference to User.
+    RegistrationNumber: Unique registration number 
+    Status: Enum (Active, Withdrawn, Dismissed, Transferred_Out, Graduated).
+    CurrentSemester: Integer (e.g., 3).
+    Batch: String (courseID+year of enrollment eg:CSTI2025).
+    ExpectedGraduationDate: String (nullable).
+    IsDeleted: Boolean. // rare escape hatch; prefer Status for lifecycle changes
+
+3. Profile Table (Personalization)
+Separated to keep core identity tables lean.
+
+    ProfileID (PK): (_id).
+    UserID (FK): Reference to User.
+    FullName: String. 
+    ProfilePic: String. (path to picture)
+    Bio: Text.
+
+4. Course Table (Curriculum)
+
+    CourseID (PK): (_id).
+    CourseCode: String (e.g., CS101).
+    CourseTitle: String,
+    Description: String,
+    CreditHours: Decimal (standard unit of measurement). 
+    Status: Enum (Active, Archived).
+
+5. Enrollment Table (Interaction & Progress)
+This is the critical "connector" for mid-session changes. When a student leaves mid-session, you update this record rather than deleting it.
+    EnrollmentID (PK): (_id).
+    StudentID (FK): Reference to Student.
+    CourseID (FK): Reference to Course.
+    EnrollmentStatus: Enum (Enrolled, Withdrawn, Completed, Failed).
+    Grade: String (nullable; e.g., 'W' for mid-session withdrawal).
+    AttemptNumber: Integer (default 1).
+    Section: String (nullable; for class group / section).
+    Batch: String (e.g., CSTI2025). // could be normalized into a Batch table later
+
+//ignore in mvp
+6. TransferCredit Table (New for Transfers)
+To handle "Transferred-In" students consistently, use a dedicated table for external credits.
+TransferID (PK): (_id).
+StudentID (FK): Reference to Student.
+ExternalCourseName: String (course name from the old college).
+EquivalentCourseID (FK): Reference to your local Course table.
+CreditsGranted: Decimal.
+ApprovalDate: Timestamp.
+Status: Enum (Active, Revoked). // allows revoking previously granted credits
+
+//ignore for mvp
+7. GradeHistory Table (Grade Immutability / Audit)
+Keeps an immutable record of all grade changes over time.
+
+    GradeHistoryID (PK): (_id).
+    EnrollmentID (FK): Reference to Enrollment.
+    OldGrade: String (nullable).
+    NewGrade: String (nullable).
+    ChangedAt: Timestamp.
+    ChangedByUserID (FK): Reference to User who performed the change.
+
+Key Consistency Rules:
+1. Soft Deletes & Unique Constraints: To prevent email conflicts on soft-deleted users, use a Partial Unique Index (e.g., CREATE UNIQUE INDEX ON users (email) WHERE is_deleted IS FALSE).
+2. Atomic Updates: When a student transfers out, perform a single transaction that updates the Student.Status to Transferred_Out and all active Enrollment.EnrollmentStatus records to Withdrawn.
+3. Immutability: Never overwrite a grade. Use the GradeHistory table or audit logs if you need to track how a grade changed from 'Incomplete' to 'A'.

@@ -1,51 +1,53 @@
 const mongoose = require("mongoose");
 const { UserRoles } = require("../config/constants.config");
-// const { Genders, UserRoles } = require("../config/constants.config");
 
 const userSchema = new mongoose.Schema({
-    // _id, name, email, password
-    name: {
-        type: String,
-        min: 2,
-        max: 50,
-        required: true,
-    },
     email: {
         type: String,
         required: true,
-        unique: true
     },
     password: {
         type: String,
         required: true,
-        min: 8
+        minlength: 8,
     },
-    role:{
+    role: {
         type: String,
         enum: Object.values(UserRoles),
-        default: UserRoles.APPLICANT
+        default: UserRoles.STUDENT,
     },
-    isActive: {
-        type:Boolean,
-        default:false
+    isEmailVerified: {
+        type: Boolean,
+        default: false,
     },
-    // createdBy: {
-    //     type: mongoose.Types.ObjectId,
-    //     ref: "user",
-    //     default: null,
-    // },
-    // updatedBy: {
-    //     type: mongoose.Types.ObjectId,
-    //     ref: "user",
-    //     default: null,
-    // }
+    lastLoginAt: {
+        type: Date,
+        default: null,
+    },
+    failedLoginCount: {
+        type: Number,
+        default: 0,
+    },
+    isDeleted: {
+        type: Boolean,
+        default: false,
+    },
+    deletedAt: {
+        type: Date,
+        default: null,
+    },
 
 }, {
     timestamps: true,
     autoCreate: true,
-    autoIndex: true
+    autoIndex: true,
 });
 
+// Ensure email uniqueness only for non-deleted users
+userSchema.index(
+    { email: 1 },
+    { unique: true, partialFilterExpression: { isDeleted: false } }
+);
 
 const UserModel = mongoose.model("User", userSchema);
 

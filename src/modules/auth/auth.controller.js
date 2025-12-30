@@ -1,10 +1,10 @@
 require("dotenv").config()
 const bcrypt = require('bcryptjs');
 const UserModel = require('../../shared/models/user.model');
-const emailService = require("../services/mail.service");
+const emailService = require("../../shared/utils/email.util");
 const { AppConfig, FRONTEND_URL } = require("../../config/app.config");
 const jwt = require("jsonwebtoken");
-const { generateActivationToken } = require('../utility/token');
+const { generateActivationToken } = require('../../shared/utils/token.util');
 
 class AuthController {
 

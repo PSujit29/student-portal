@@ -1,6 +1,5 @@
 const { Status } = require("../../shared/utils/constants");
-const ApplicantModel = require("../models/applicant.model");
-const StudentModel = require("../models/student.model");
+const StudentModel = require("./student.model");
 const UserModel = require("../../shared/models/user.model");
 
 class StudentController {
@@ -14,12 +13,12 @@ class StudentController {
                 throw { code: 404, message: "Forbidden Request call", status: "FORBIDDEN_REQUEST_CALL" }
             }
             if (!(student.status === Status.ACTIVE)) {
-                throw { code: 400, message: "FOrbidden! Inactive student cannot request" }
+                throw { code: 400, message: "Frbidden! Inactive student cannot request" }
             }
             res.json({
                 success: true,
                 data: { student },
-                message: 'getMyProfile stub',
+                message: 'getMyProfile',
                 status: 'TEST_GET_MY_PROFILE'
             });
         } catch (err) {
@@ -34,7 +33,7 @@ class StudentController {
                 throw { code: 404, message: "Forbidden Request call", status: "FORBIDDEN_REQUEST_CALL" }
             }
             if (!(student.status === Status.ACTIVE)) {
-                throw { code: 400, message: "FOrbidden! Inactive student cannot request" }
+                throw { code: 400, message: "Forbidden! Inactive student cannot request" }
             }
 
             const updatePayload = req.body || {};

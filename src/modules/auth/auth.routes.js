@@ -1,9 +1,8 @@
 const authRouter = require("express").Router()
 const AuthController = require("./auth.controller")
 const checkLogin = require("./auth.middleware")
-// TODO: wire uploader and bodyValidator once their new locations are finalised
-// const uploader = require("../middlewares/uploader.middleware")
-// const bodyValidator = require("../middlewares/validator.middleware")
+const bodyValidator = require("../../shared/middlewares/validate.middleware")
+// const uploader = require("../../shared/middlewares/upload.middleware")
 const Joi = require("joi")
 
 const authCtrl = new AuthController

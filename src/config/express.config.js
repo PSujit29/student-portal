@@ -1,7 +1,7 @@
 const express = require('express')
 require("./database.config.js")
 const router = require('../router.js')
-const { errorHandler } = require("../shared/middlewares/error.middleware");
+const errorHandler = require("../shared/middlewares/error.middleware");
 const app = express()
 
 //body parser

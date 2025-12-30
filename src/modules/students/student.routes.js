@@ -3,8 +3,9 @@ const { UserRoles, NonActiveStatuses } = require("../../shared/utils/constants")
 const checkLogin = require("../../shared/middlewares/auth.middleware")
 const stuCtrl = require("./student.controller");
 const getLoggedInStudent = require("./student.middleware");
-// TODO: wire shared bodyValidator middleware once path is final
-// const bodyValidator = require("../middlewares/validator.middleware");
+const Joi = require("joi");
+const bodyValidator = require("../../shared/middlewares/validate.middleware")
+
 
 const updationRules = Joi.object({
     phone: Joi.string().pattern(/^[0-9]{7,10}$/).optional(),

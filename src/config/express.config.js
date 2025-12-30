@@ -1,7 +1,7 @@
 const express = require('express')
-require("./mongodb.config.js")
-const router = require('../router/router.js')
-const errorHanlder = require("../middlewares/error-handling.middleware");
+require("./database.config.js")
+const router = require('../router.js')
+const { errorHandler } = require("../shared/middlewares/error.middleware");
 const app = express()
 
 //body parser
@@ -18,5 +18,5 @@ app.use((req, res, next) => {
     next({ code: 404, message: "page not found", status: "PAGE_NOT_FOUND_ERR" })
 })
 
-app.use(errorHanlder)
+app.use(errorHandler)
 module.exports = app

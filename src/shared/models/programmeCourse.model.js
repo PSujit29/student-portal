@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { Programme, CourseCategory } = require("../config/constants.config");
+const { Programme, CourseCategory } = require("../utils/constants");
 
 const programmeCourseSchema = new mongoose.Schema({
     programme: {

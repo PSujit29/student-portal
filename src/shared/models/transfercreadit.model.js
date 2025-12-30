@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { TransferStatus } = require('../config/constants.config');
+const { TransferStatus } = require('../utils/constants');
 
 const transferCreditSchema = new mongoose.Schema({
     // ignore in MVP, but keep schema correct for later use

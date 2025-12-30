@@ -17,10 +17,13 @@ const Status = {
     TRANSFERRED_OUT: "transferred_out", //took transfer
     GRADUATED: "graduated" //successfully completed the bachelors or relevant degree
 }
+
+// Helper subset for statuses that mean the student is no longer actively studying
 const NonActiveStatuses = {
-    RESTICATED: "resticated", //removed from college
-    GRADUATED: "graduated", //successfully completed the bachelors or relevant degree
-    WITHDRAWN: "withdrawn" //withdrawn mid college   
+    WITHDRAWN: Status.WITHDRAWN,
+    DISMISSED: Status.DISMISSED,
+    TRANSFERRED_OUT: Status.TRANSFERRED_OUT,
+    GRADUATED: Status.GRADUATED,
 }
 
 const ApplicationStatus = {

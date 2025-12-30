@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { Programme, Relations, Status } = require('../config/constants.config');
+const { Programme, Status } = require('../config/constants.config');
 
 const studentSchema = new mongoose.Schema({
     userId: {
@@ -13,6 +13,11 @@ const studentSchema = new mongoose.Schema({
         unique: true,
         required: true,
         immutable: true,
+    },
+    programme: {
+        type: String,
+        enum: Object.values(Programme),
+        required: true,
     },
     status: {
         type: String,

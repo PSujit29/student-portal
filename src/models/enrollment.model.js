@@ -34,6 +34,12 @@ const enrollmentSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    semester: {
+        type: Number,
+        min: 1,
+        max: 8,
+        default: null,
+    },
 
 }, {
     timestamps: true,

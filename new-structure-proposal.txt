@@ -18,6 +18,7 @@ Includes status fields to handle transfers and mid-session departures without da
     StudentID (PK): (_id).
     UserID (FK): Reference to User.
     RegistrationNumber: Unique registration number 
+    Programme: Enum (CSIT, BCA, BIT, ...).
     Status: Enum (Active, Withdrawn, Dismissed, Transferred_Out, Graduated).
     CurrentSemester: Integer (e.g., 3).
     Batch: String (courseID+year of enrollment eg:CSTI2025).
@@ -41,6 +42,11 @@ Separated to keep core identity tables lean.
     Description: String,
     CreditHours: Decimal (standard unit of measurement). 
     Status: Enum (Active, Archived).
+
+// curriculum mapping layer (by programme & semester)
+// Implemented in code as a separate model (e.g., ProgrammeCourse)
+// that links Programme + Semester -> CourseID and marks electives.
+
 
 5. Enrollment Table (Interaction & Progress)
 This is the critical "connector" for mid-session changes. When a student leaves mid-session, you update this record rather than deleting it.

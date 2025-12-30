@@ -1,29 +1,17 @@
-const authRouter = require("express").Router()
-const AuthController = require("./auth.controller")
-const checkLogin = require("./auth.middleware")
-const bodyValidator = require("../../shared/middlewares/validate.middleware")
-// const uploader = require("../../shared/middlewares/upload.middleware")
-const Joi = require("joi")
+const authRouter = require('express').Router();
 
-const authCtrl = new AuthController
+const AuthController = require('./auth.controller');
+const checkLogin = require('./auth.middleware');
+const bodyValidator = require('../../shared/middlewares/validate.middleware');
+const { registerSchema, loginSchema } = require('./auth.validation');
 
+const authCtrl = new AuthController();
 
-const registerRules = Joi.object({
-    "name": Joi.string().min(2).max(50).required(true),
-    "email": Joi.string().email().required(true),
-    "password": Joi.string().min(8).required(true)
-})
+authRouter.post('/register', bodyValidator(registerSchema), authCtrl.registerUser);
+authRouter.post('/login', bodyValidator(loginSchema), authCtrl.loginUser);
+authRouter.get('/activate', authCtrl.activateUser);
+authRouter.get('/logout', authCtrl.logoutUser);
 
-const loginRules = Joi.object({
-    "email": Joi.string().email().required(true),
-    "password": Joi.string().min(8).required(true)
-})
+authRouter.get('/me', checkLogin(), authCtrl.getLoggedInUser);
 
-authRouter.post("/register", bodyValidator(registerRules), authCtrl.registerUser)
-authRouter.post("/login", bodyValidator(loginRules), authCtrl.loginUser)
-authRouter.get("/activate/", authCtrl.activateUser)
-authRouter.get("/logout", authCtrl.logoutUser)
-
-authRouter.get('/me', checkLogin(), authCtrl.getLoggedInUser)
-
-module.exports = authRouter 
+module.exports = authRouter;

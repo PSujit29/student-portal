@@ -1,139 +1,82 @@
-require("dotenv").config()
-const bcrypt = require('bcryptjs');
-const UserModel = require('../../shared/models/user.model');
-const emailService = require("../../shared/utils/email.util");
-const { AppConfig, FRONTEND_URL } = require("../../config/app.config");
-const jwt = require("jsonwebtoken");
-const { generateActivationToken } = require('../../shared/utils/token.util');
+const authService = require('./auth.service');
 
 class AuthController {
-
-    // handle user registration
     async registerUser(req, res, next) {
-        let data = req.body;
-        data.password = bcrypt.hashSync(data.password)
-        // i guess user role is default to applicant at this phaase while storing in database.
-        const user = new UserModel(data)
-        const savedUser = await user.save()
+        try {
+            const { name, email, password } = req.body;
 
-        const token = generateActivationToken(user);
+            const { user, displayName } = await authService.register({
+                name,
+                email,
+                password,
+            });
 
-        // Send user to a simple HTML page that will
-        // call the real /studentportal/auth/activate API in the background
-        const activationLink = `${FRONTEND_URL}/activation-redirect.html?token=${token}`;
-
-        const html = `
-  <h2>Activate your account</h2>
-  <p>Hello ${user.name},</p>
-  <p>Click the button below to activate your account:</p>
-  <a href="${activationLink}"
-     style="padding:10px 20px;background:#007bff;color:#fff;text-decoration:none;">
-     Activate Account
-  </a>
-  <p>This link expires in 15 minutes.</p>
-`;
-
-        await emailService.sendEmail({
-            to: user.email,
-            subject: 'Activate your account',
-            message: html
-        });
-
-
-        res.json({
-            data: {
-                _id: savedUser._id,
-                name: savedUser.name
-            },
-            message: "user register success",
-            status: "TEST_REGISTER_USER"
-        })
+            res.json({
+                data: {
+                    _id: user._id,
+                    email: user.email,
+                    name: displayName,
+                },
+                message: 'User registered successfully. Please check your email to activate the account.',
+                status: 'USER_REGISTER_SUCCESS',
+            });
+        } catch (err) {
+            next(err);
+        }
     }
 
     async activateUser(req, res, next) {
-        const { token } = req.query;
-        if (!token) {
-            return res.status(400).json({ message: 'Activation token required' });
-        }
-
-        let payload;
         try {
-            payload = jwt.verify(token, process.env.ACTIVATION_SECRET);
-        } catch {
-            return res.status(401).json({ message: 'Invalid or expired token' });
+            const { token } = req.query;
+            const { alreadyActivated } = await authService.activateAccount(token);
+
+            if (alreadyActivated) {
+                return res.json({
+                    message: 'Account already activated',
+                    status: 'ACCOUNT_ALREADY_ACTIVATED',
+                });
+            }
+
+            res.json({
+                message: 'Account activated successfully',
+                status: 'ACCOUNT_ACTIVATED',
+            });
+        } catch (err) {
+            next(err);
         }
-
-        if (payload.type !== 'activation') {
-            return res.status(403).json({ message: 'Invalid token type' });
-        }
-
-        const user = await UserModel.findById(payload.uid);
-        if (!user) {
-            return res.status(404).json({ message: 'User not found' });
-        }
-
-        if (user.isActive) {
-            return res.json({ message: 'Account already activated' });
-        }
-
-        user.isActive = true;
-        await user.save();
-
-        res.json({ message: 'Account activated successfully' });
-    };
-
+    }
 
     async loginUser(req, res, next) {
         try {
-            // console.log(res.body)
-            const { email, password } = req.body
+            const { email, password } = req.body;
 
-            //user verification
-            const userDetail = await UserModel.findOne({
-                email: email
-            })
-            if (!userDetail) {
-                throw { code: 404, message: "User not found", status: "USER_NOT_FOUND" }
-            }
-            //remove login access if account is not activated
-            if (userDetail.isActive === false) {
-                throw { code: 400, message: "User not activated", message: "Activate your account first", status: "USER_NOT_ACTIVATED" }
-            }
-            //password verification
-            if (!bcrypt.compareSync(password, userDetail.password)) {
-                throw { code: 422, message: "credentials not match", status: "CREDENTIAL_NOT_MACTCHED" }
-            }
-
-            //jwt
-            const accessToken = jwt.sign({ sub: userDetail._id, type: "Bearer" }, AppConfig.jwtSecret, { expiresIn: "30d" })
+            const { accessToken } = await authService.login({ email, password });
 
             res.json({
                 data: accessToken,
-                message: "Logged in successfully",
-                status: "ok",
-            })
-        }
-        catch (exception) {
-            // console.log(exception)
-            next(exception)
+                message: 'Logged in successfully',
+                status: 'LOGIN_SUCCESS',
+            });
+        } catch (err) {
+            next(err);
         }
     }
 
     logoutUser = (req, res, next) => {
         res.json({
             data: null,
-            message: "test logout user",
-            status: "TEST_LOGOUT_USER"
-        })
-    }
+            message: 'Logout endpoint (no server-side session to destroy)',
+            status: 'LOGOUT_SUCCESS',
+        });
+    };
+
     getLoggedInUser = (req, res, next) => {
         res.json({
             data: req.loggedInUser,
-            message: "test get logged in user",
-            status: "TEST_GET_LOGGED_IN_USER"
-        })
-    }
+            message: 'Fetched logged-in user',
+            status: 'GET_LOGGED_IN_USER_SUCCESS',
+        });
+    };
 }
 
-
-module.exports = AuthController
+module.exports = AuthController;

@@ -51,6 +51,12 @@ const CourseStatus = {
     ARCHIVED: "archived",
 }
 
+// Course / curriculum category (how a course is delivered)
+const CourseCategory = {
+    THEORY: "theory",
+    LAB: "lab",
+}
+
 // Enrollment status (per-course student progress)
 const EnrollmentStatus = {
     ENROLLED: "enrolled",
@@ -74,6 +80,7 @@ module.exports = {
     Status,
     NonActiveStatuses,
     CourseStatus,
+    CourseCategory,
     EnrollmentStatus,
     TransferStatus,
 }

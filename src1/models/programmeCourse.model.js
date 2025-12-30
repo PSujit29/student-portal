@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { Programme } = require("../config/constants.config");
+const { Programme, CourseCategory } = require("../config/constants.config");
 
 const programmeCourseSchema = new mongoose.Schema({
     programme: {
@@ -25,6 +25,15 @@ const programmeCourseSchema = new mongoose.Schema({
     electiveGroup: {
         type: String,
         default: null
+    },
+    category: {
+        type: String,
+        enum: Object.values(CourseCategory),
+        default: CourseCategory.THEORY,
+    },
+    remarks: {
+        type: String,
+        default: null,
     },
 
 }, {

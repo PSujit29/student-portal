@@ -13,6 +13,14 @@ const profileSchema = new mongoose.Schema({
         max: 50,
         required: true
     },
+    phone: {
+        type: String,
+        default: null,
+    },
+    address: {
+        type: String,
+        default: null,
+    },
     profilePic: {
         type: String,
         default: null

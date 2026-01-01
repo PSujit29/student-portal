@@ -2,6 +2,7 @@ const jwt = require("jsonwebtoken");
 const { UserRoles } = require("../utils/constants");
 const { AppConfig } = require("../../config/app.config");
 const UserModel = require("../models/user.model");
+const ProfileModel = require("../../modules/profiles/profile.model");
 
 const checkLogin = function (allowedRoles = null) {
     return async (req, res, next) => {
@@ -24,12 +25,21 @@ const checkLogin = function (allowedRoles = null) {
 
             }
 
+            // Ensure the user has a profile; create an empty one if missing
+            let profile = await ProfileModel.findOne({ userId: userDetail._id });
+            if (!profile) {
+                profile = await ProfileModel.create({
+                    userId: userDetail._id,
+                    fullName: userDetail.name || userDetail.email || "",
+                });
+            }
+
             req.loggedInUser = {
                 _id: userDetail._id,
+                profileId: profile._id,
                 name: userDetail.name,
                 email: userDetail.email,
                 role: userDetail.role,
-                // Map the email verification status to the isActive flag exposed on the request
                 isActive: userDetail.isEmailVerified,
             }
 

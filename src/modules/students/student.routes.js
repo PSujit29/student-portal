@@ -4,13 +4,8 @@ const checkLogin = require("../../shared/middlewares/auth.middleware")
 const stuCtrl = require("./student.controller");
 const getLoggedInStudent = require("./student.middleware");
 const Joi = require("joi");
-const bodyValidator = require("../../shared/middlewares/validate.middleware")
-
-
-const updationRules = Joi.object({
-    phone: Joi.string().pattern(/^[0-9]{7,10}$/).optional(),
-    address: Joi.string().min(1).max(100).optional()
-}).min(1).unknown(false);//allow atleast one update else check is pointless and costly
+const bodyValidator = require("../../shared/middlewares/validate.middleware");
+const { updationRules, deletionRules } = require("./student.validation");
 
 // for student only
 stuRouter.route('/me')
@@ -18,9 +13,6 @@ stuRouter.route('/me')
     .put(checkLogin([UserRoles.STUDENT]), bodyValidator(updationRules), getLoggedInStudent(), stuCtrl.updateMyProfile);
 
 // for admin only
-const deletionRules = Joi.object({
-    reason: Joi.string().valid(...Object.values(NonActiveStatuses)).required(true)
-}).unknown(true);
 
 stuRouter.get('/', checkLogin([UserRoles.ADMIN]), stuCtrl.getAllStudents);
 

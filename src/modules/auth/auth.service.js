@@ -5,6 +5,7 @@ const UserModel = require('../../shared/models/user.model');
 const emailService = require('../../shared/utils/email.util');
 const { AppConfig, FRONTEND_URL } = require('../../config/app.config');
 const { generateActivationToken } = require('../../shared/utils/token.util');
+const ProfileModel = require('../profiles/profile.model');
 
 class AuthService {
 	async register({ name, email, password }) {
@@ -25,6 +26,12 @@ class AuthService {
 		});
 
 		const savedUser = await user.save();
+
+		// create empty profile immediately
+		await ProfileModel.create({
+			userId: savedUser._id,
+			fullName: name || '',
+		});
 
 		const token = generateActivationToken(savedUser);
 

@@ -1,5 +1,4 @@
 const courseService = require("./course.service");
-const { successResponse } = require("../../shared/utils/response.util");
 
 class CourseController {
     async getAllCourses(req, res, next) {
@@ -7,10 +6,8 @@ class CourseController {
             const { page, limit, status } = req.query;
             const result = await courseService.listCourses({ page, limit, status });
 
-            return successResponse(res, {
+            return res.status(200).json({
                 data: result.data,
-                message: "Courses fetched successfully",
-                status: "COURSES_LIST_SUCCESS",
                 meta: {
                     page: result.page,
                     limit: result.limit,
@@ -27,11 +24,8 @@ class CourseController {
             const payload = req.body || {};
             const course = await courseService.createCourse(payload);
 
-            return successResponse(res, {
+            return res.status(201).json({
                 data: course,
-                message: "Course created successfully",
-                status: "COURSE_CREATED",
-                code: 201,
             });
         } catch (err) {
             next(err);
@@ -43,10 +37,8 @@ class CourseController {
             const { courseId } = req.params;
             const course = await courseService.getCourseById(courseId);
 
-            return successResponse(res, {
+            return res.status(200).json({
                 data: course,
-                message: "Course detail fetched successfully",
-                status: "COURSE_DETAIL_SUCCESS",
             });
         } catch (err) {
             next(err);
@@ -60,10 +52,8 @@ class CourseController {
 
             const updatePatch = await courseService.updateCourse(courseId, body);
 
-            return successResponse(res, {
+            return res.status(200).json({
                 data: updatePatch,
-                message: "Course updated successfully",
-                status: "COURSE_UPDATED",
             });
         } catch (err) {
             next(err);
@@ -76,10 +66,8 @@ class CourseController {
             const { status } = req.body || {};
             const result = await courseService.updateCourseStatus(courseId, status);
 
-            return successResponse(res, {
+            return res.status(200).json({
                 data: result,
-                message: "Course status updated successfully",
-                status: "COURSE_STATUS_UPDATED",
             });
         } catch (err) {
             next(err);

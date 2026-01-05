@@ -10,6 +10,13 @@ const UserRoles = {
     FACULTY: "faculty",
 }
 
+// Account lifecycle / authentication state
+const AccountStatus = {
+    ACTIVE: 'active',
+    LOCKED: 'locked',
+    SUSPENDED: 'suspended',
+}
+
 const Status = {
     ACTIVE: "active", //is currently studying activey
     WITHDRAWN: "withdrawn", //withdrawn mid college
@@ -26,11 +33,6 @@ const NonActiveStatuses = {
     GRADUATED: Status.GRADUATED,
 }
 
-const ApplicationStatus = {
-    UNDER_REVIEW: "under_review",
-    ACCEPTED: "accepted",
-    REJECTED: "rejected"
-}
 
 const Programme = {
     CSIT: "csit",
@@ -45,19 +47,22 @@ const Relations = {
     GUARDIAN: 'guardian',
 }
 
-// Course status (curriculum lifecycle)
+const AudienceType = {
+    ALL: "all", // all relevant users (e.g. all students)
+    COURSE: "course", // users related to a specific course
+    SPECIFIC_USERS: "specific_users", // explicit list of userIds
+}
+
 const CourseStatus = {
     ACTIVE: "active",
     ARCHIVED: "archived",
 }
 
-// Course / curriculum category (how a course is delivered)
 const CourseCategory = {
     THEORY: "theory",
     LAB: "lab",
 }
 
-// Enrollment status (per-course student progress)
 const EnrollmentStatus = {
     ENROLLED: "enrolled",
     WITHDRAWN: "withdrawn",
@@ -65,7 +70,6 @@ const EnrollmentStatus = {
     FAILED: "failed",
 }
 
-// Transfer credit status
 const TransferStatus = {
     ACTIVE: "active",
     REVOKED: "revoked",
@@ -74,11 +78,12 @@ const TransferStatus = {
 module.exports = {
     Genders,
     UserRoles,
-    ApplicationStatus,
+    AccountStatus,
     Programme,
     Relations,
     Status,
     NonActiveStatuses,
+    AudienceType,
     CourseStatus,
     CourseCategory,
     EnrollmentStatus,

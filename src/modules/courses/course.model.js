@@ -1,12 +1,14 @@
 const mongoose = require('mongoose');
+const { createBaseSchema } = require('../../shared/models/base.model');
 const { CourseStatus } = require("../../shared/utils/constants");
 
-const courseSchema = new mongoose.Schema({
+const courseSchema = createBaseSchema({
     courseCode: {
         type: String,
         required: true,
         unique: true,
         trim: true,
+        uppercase: true,
     },
     courseTitle: {
         type: String,
@@ -21,7 +23,7 @@ const courseSchema = new mongoose.Schema({
     creditHours: {
         type: Number,
         required: true,
-        min: 0,
+        min: 1,
     },
     status: {
         type: String,
@@ -29,11 +31,10 @@ const courseSchema = new mongoose.Schema({
         default: CourseStatus.ACTIVE,
     },
 
-}, {
-    timestamps: true,
-    autoIndex: true,
-    autoCreate: true,
 });
+
+// Efficient filtering by course lifecycle
+courseSchema.index({ status: 1 });
 
 const CourseModel = mongoose.model("Course", courseSchema);
 

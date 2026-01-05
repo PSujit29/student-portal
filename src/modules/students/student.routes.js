@@ -1,25 +1,27 @@
-const stuRouter = require("express").Router()
-const { UserRoles, NonActiveStatuses } = require("../../shared/utils/constants");
-const checkLogin = require("../../shared/middlewares/auth.middleware")
+const stuRouter = require("express").Router();
+const checkLogin = require("../../shared/middlewares/auth.middleware");
 const stuCtrl = require("./student.controller");
-const getLoggedInStudent = require("./student.middleware");
-const Joi = require("joi");
-const bodyValidator = require("../../shared/middlewares/validate.middleware");
-const { updationRules, deletionRules } = require("./student.validation");
+const { UserRoles } = require("../../shared/utils/constants");
 
-// for student only
-stuRouter.route('/me')
-    .get(checkLogin([UserRoles.STUDENT]), getLoggedInStudent(), stuCtrl.getMyProfile)
-    .put(checkLogin([UserRoles.STUDENT]), bodyValidator(updationRules), getLoggedInStudent(), stuCtrl.updateMyProfile);
+// role helpers
+const requireStudent = checkLogin([UserRoles.STUDENT]);
+const requireAdmin = checkLogin([UserRoles.ADMIN]);
 
-// for admin only
+// initials of route:  localhost/studentportal/student/
 
-stuRouter.get('/', checkLogin([UserRoles.ADMIN]), stuCtrl.getAllStudents);
+stuRouter
+    .route("/me")
+    .get(requireStudent, stuCtrl.getMyProfile)
+    .put(requireStudent, stuCtrl.updateMyProfile);
 
-stuRouter.route('/:studentId')
-    .get(checkLogin([UserRoles.ADMIN]), stuCtrl.getStudentDetail)
-    .patch(checkLogin([UserRoles.ADMIN]), stuCtrl.updateStudentByAdmin)
-    .delete(checkLogin([UserRoles.ADMIN]), bodyValidator(deletionRules), stuCtrl.deleteStudentByAdmin);
+stuRouter
+    .route("/")
+    .get(requireAdmin, stuCtrl.getAllStudents);
 
+stuRouter
+    .route("/:studentId")
+    .get(requireAdmin, stuCtrl.getStudentDetail)
+    .patch(requireAdmin, stuCtrl.updateStudentByAdmin)
+    .delete(requireAdmin, stuCtrl.deleteStudentByAdmin);
 
-module.exports = stuRouter 
+module.exports = stuRouter;

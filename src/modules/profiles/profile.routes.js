@@ -6,11 +6,10 @@ const { UserRoles } = require("../../shared/utils/constants");
 // student + faculty view and update profile
 profileRouter.route("/me")
     .get(checkLogin(), profileCtrl.getMyProfile)
-    // .put(checkLogin([UserRoles.STUDENT, UserRoles.FACULTY]), profileCtrl.updateMyProfile);
+    .put(checkLogin([UserRoles.STUDENT, UserRoles.FACULTY]), profileCtrl.updateMyProfile);
 
 // 2️dmin for manage everyone profiles
-profileRouter.route("/users")
-    .get(checkLogin([UserRoles.ADMIN]), profileCtrl.getAllProfiles);
+profileRouter.get("/users", checkLogin([UserRoles.ADMIN]), profileCtrl.getAllProfiles);
 
 profileRouter.route("/users/:userId")
     .get(checkLogin([UserRoles.ADMIN]), profileCtrl.getUserProfileByAdmin)

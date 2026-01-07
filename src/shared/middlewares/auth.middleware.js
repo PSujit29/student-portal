@@ -57,7 +57,7 @@ const checkLogin = function (allowedRoles = null) {
             } else {
                 throw { code: 403, message: "Forbidden: You do not have the required permissions.", status: "NOT_ALLOWED" }
             }
-
+            
         } catch (exception) {
             // console.log(exception)
             next(exception)

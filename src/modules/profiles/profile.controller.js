@@ -1,12 +1,12 @@
 const { Status } = require("../../shared/utils/constants");
 const profileService = require("./profile.service");
 const UserModel = require("../../shared/models/user.model");
-const errorHandler = require("../../shared/middlewares/error.middleware")
+const errorHandler = require("../../shared/middlewares/error.middleware");
 
 class ProfileController {
     //route: studentportal/profile/
 
-    async getMyProfile(req, res, next)  {
+    async getMyProfile(req, res, next) {
         try {
             const userId = req.loggedInUser?._id;
             if (!userId) {
@@ -25,60 +25,68 @@ class ProfileController {
 
     async updateMyProfile(req, res, next) {
         try {
-            let student = req.loggedInStudent;
-            if (!student) {
-                throw { code: 404, message: "Forbidden Request call", status: "FORBIDDEN_REQUEST_CALL" }
-            }
-            if (!(student.status === Status.ACTIVE)) {
-                throw { code: 400, message: "Forbidden! Inactive student cannot request" }
-            }
-
-            const updatePayload = req.body || {};
-
-            let applicantPatch = {};
-
-            if (updatePayload.phone) applicantPatch.phone = updatePayload.phone;
-            if (updatePayload.address) applicantPatch.address = updatePayload.address;
-
-            // INVARIANT #2 — nothing to update
-            const nothingToUpdate = Object.keys(applicantPatch).length === 0;
-
-            if (nothingToUpdate) {
-                return res.status(400).json({
-                    success: false,
-                    message: "Nothing to update",
-                    status: "NOTHING_TO_UPDATE"
-                });
-            }
-
-            const userId = req.loggedInUser?._id;
+            const { userId } = req.loggedInUser;
             if (!userId) {
-                throw { code: 404, message: "User Not Found", status: "USER_NOT_FOUND" };
+                throw { code: 404, message: "User not found" }
             }
+            const body = req.body || {};
 
-            const applicant = await ApplicantModel.findOne({ userId });
-            if (!applicant) {
-                throw { code: 404, message: "Applicant Not Found", status: "APPLICANT_NOT_FOUND" };
-            }
+            const updatePatch = await courseService.updateProfile(userId, body);
 
-
-            if (Object.keys(applicantPatch).length) {
-                await ApplicantModel.updateOne(
-                    { _id: applicant._id },
-                    { $set: applicantPatch }
-                );
-            }
-
-            return res.json({
-                success: true,
-                applicantPatch,
-                message: "Profile updated successfully",
-                status: "PROFILE_UPDATED"
+            return res.status(200).json({
+                data: updatePatch,
             });
 
         } catch (err) {
             next(err);
         }
+    }
+
+    async getAllProfiles(req, res, next) {
+        try {
+            const { page, limit } = req.query;
+            const result = await profileService.getAllProfiles({ page, limit });
+
+            return res.status(200).json({
+                data: result.data,
+                message: "All Students Profile"
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async getUserProfileByAdmin(req, res, next) {
+        try {
+            const { userId } = req.params;
+            const update = await profileService.viewProfile(userId);
+
+            return res.status(200).json({
+                data: update.data,
+                message: "Updated Students Profile By Admin"
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async updateUserProfileByAdmin(req, res, next) {
+        try {
+            const { userId } = req.params;
+            const body = req.body || {};
+
+            const updatePatch = await courseService.updateProfileByAdmin(userId, body);
+
+            return res.status(200).json({
+                data: updatePatch,
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
+
+    async viewStudentProfile(req, res, next) {
+        
     }
 }
 

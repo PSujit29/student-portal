@@ -3,7 +3,10 @@ const ProfileModel = require("./profile.model");
 class ProfileService {
 	async viewProfile(userId = null) {
 		if (userId === null) {
-
+			const error = new Error("No user id attached to update");
+			error.code = 402;
+			error.status = "NO_USER_PPROVIDED";
+			throw error;
 		}
 		const profile = await
 			ProfileModel.findOne({ userId: userId });
@@ -36,10 +39,11 @@ class ProfileService {
 		await this.getProfileById(profileId);
 
 		const updatePatch = {};
-		if (patch.profileTitle) updatePatch.profileTitle = patch.profileTitle;
-		if (patch.description) updatePatch.description = patch.description;
-		if (patch.creditHours !== undefined) updatePatch.creditHours = patch.creditHours;
-		if (patch.status) updatePatch.status = patch.status;
+		if (patch.phone) updatePatch.phone = patch.phone;
+		if (patch.address) updatePatch.address = patch.address;
+		if (patch.profilePic) updatePatch.profilePic = patch.profilePic;
+		if (patch.bio) updatePatch.bio = patch.bio;
+		//  cloudinary ??
 
 		if (Object.keys(updatePatch).length === 0) {
 			const error = new Error("Nothing to update");
@@ -53,27 +57,30 @@ class ProfileService {
 		return updatePatch;
 	}
 
-	async updateProfileStatus(profileId, status) {
-		if (!status) {
-			const error = new Error("Status is required");
-			error.code = 400;
-			error.status = "STATUS_REQUIRED";
-			throw error;
-		}
-
-		if (!Object.values(ProfileStatus).includes(status)) {
-			const error = new Error("Invalid status value");
-			error.code = 400;
-			error.status = "INVALID_STATUS";
-			throw error;
-		}
-
-		await this.getProfileById(profileId);
-
-		await ProfileModel.updateOne({ _id: profileId }, { $set: { status } });
-
-		return { status };
+	async updateProfileByAdmin(userId, patch = {}) {
+		const profile = await ProfileModel.findOne({ userId: userId });
+		await this.getProfileById(profile.profileId)
+		return await this.updateProfile(profile.profileId, patch)
 	}
+
+	async getAllProfiles({ page = 1, limit = 10 } = {}) {
+		const pageNumber = Number(page) || 1;
+		const pageSize = Number(limit) || 10;
+		const skip = (pageNumber - 1) * pageSize;
+
+		const [profiles, total] = await Promise.all([
+			ProfileModel.find({}).sort({ createdAt: 1 }).skip(skip).limit(pageSize),
+			ProfileModel.countDocuments({}),
+		]);
+
+		return {
+			data: profiles,
+			page: pageNumber,
+			limit: pageSize,
+			total,
+		};
+	}
+
 }
 
 module.exports = new ProfileService();

@@ -51,8 +51,35 @@ class FacultyController {
             next(err);
         }
     }
+    async getMyProfile(req, res, next) {
+        try {
+            const { facultyId } = req.params;
+            res.json({
+                success: true,
+                message: 'getMyProfile (stub)',
+                data: { _id: facultyId || "stub_id", name: "Stub Faculty" },
+                status: 'TEST_GET_FACULTY_DETAIL'
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
 
-    async updateFaculty(req, res, next) {
+    async updateMyProfile(req, res, next) {
+        try {
+            const updatePayload = req.body || {};
+            res.json({
+                success: true,
+                applicantPatch: updatePayload,
+                message: "Profile updated successfully (stub)",
+                status: "PROFILE_UPDATED"
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
+    
+    async updateFacultyByAdmin(req, res, next) {
         try {
             const updatePayload = req.body || {};
             res.json({
@@ -66,7 +93,7 @@ class FacultyController {
         }
     }
 
-    async deleteFaculty(req, res, next) {
+    async deleteFacultyByAdmin(req, res, next) {
         try {
             const { facultyId } = req.params;
             const reason = req.body.reason || "No reason provided";
@@ -76,7 +103,7 @@ class FacultyController {
                 facultyPatch: { status: reason },
                 userPatch: { isActive: false },
                 message: `deleteFacultyByAdmin (stub) for ID: ${facultyId}`,
-                status: 'TEST_DELETE_STUDENT_BY_ADMIN'
+                status: 'TEST_DELETE_FACULTY_BY_ADMIN'
             });
         } catch (err) {
             next(err);
@@ -84,4 +111,4 @@ class FacultyController {
     }
 }
 
-module.exports = FacultyController
+module.exports = new FacultyController()

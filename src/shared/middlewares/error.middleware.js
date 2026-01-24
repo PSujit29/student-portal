@@ -1,7 +1,9 @@
 
 const errorHandler = (err, req, res, next) => {
 
-    // console.log(err)
+    // Log full error to help with debugging in development
+    // (Consider guarding with NODE_ENV check for production.)
+    console.error("[ErrorMiddleware]", err && err.stack ? err.stack : err)
 
     // Prefer explicit HTTP status fields; do NOT use generic `err.code`
     // because libraries (like Mongo) use it for non-HTTP numeric codes (e.g. 11000).

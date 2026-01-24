@@ -35,8 +35,8 @@ const studentSchema = createBaseSchema({
         type: String,
         required: true,
         trim: true,
-        minlength: 2,
-        maxlength: 20,
+        minlength: 4,
+        maxlength: 25,
         validate: {
             validator: function (value) {
                 // allow patterns like "2023", "2023A", "2023-CSIT"
@@ -54,34 +54,15 @@ const studentSchema = createBaseSchema({
 // Common student query patterns
 studentSchema.index({ programme: 1, status: 1, batch: 1 });
 
-// Prevent storing a current semester for non-active students
-studentSchema.pre('validate', function (next) {
+// Pre-validate hook to adjust fields based on status
+// This runs synchronously; no need for a `next` callback.
+studentSchema.pre('validate', function () {
     const nonActiveValues = Object.values(NonActiveStatuses || {});
-    if (nonActiveValues.includes(this.status) && this.currentSemester !== null) {
-        return next(new Error('currentSemester must be null for non-active students'));
-    }
-    next();
-});
 
-// Basic status transition guard: once non-active, do not go back to ACTIVE
-studentSchema.pre('validate', async function (next) {
-    if (this.isNew || !this._id) return next();
-
-    try {
-        const existing = await this.constructor.findById(this._id).select('status');
-        if (!existing) return next();
-
-        const wasNonActive = Object.values(NonActiveStatuses || {}).includes(existing.status);
-        if (wasNonActive && this.status === Status.ACTIVE) {
-            return next(new Error('Cannot transition student status from non-active back to ACTIVE'));
-        }
-
-        next();
-    } catch (err) {
-        next(err);
+    if (nonActiveValues.includes(this.status)) {
+        this.currentSemester = null;
     }
 });
-
 const StudentModel = mongoose.model("Student", studentSchema);
 
 module.exports = StudentModel

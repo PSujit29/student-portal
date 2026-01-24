@@ -1,53 +1,61 @@
-const { Status } = require("../../shared/utils/constants");
-const StudentModel = require("./student.model");
-const UserModel = require("../../shared/models/user.model");
+const studentService = require("./student.service");
 
 class StudentController {
     // route: studentportal/profile/
-    async getMyProfile(req, res, next) {
+
+    async getMyStudentProfile(req, res, next) {
         try {
-            res.json({
+            const userId = req.loggedInUser?._id;
+            const {student} = await studentService.getStudentProfile(userId);
+
+            return res.status(200).json({
                 success: true,
-                data: {
-                    student: { _id: "stub_id", name: "John Doe", status: "ACTIVE" }
-                },
-                message: 'getMyProfile stub',
-                status: 'TEST_GET_MY_PROFILE'
+                student,
+                message: "Your Student Profile"
             });
         } catch (err) {
             next(err);
         }
     }
 
-    async updateMyProfile(req, res, next) {
+    async createStudentByAdmin(req, res, next) {
         try {
-            const updatePayload = req.body || {};
-            res.json({
+            const payload = req.body; 
+            const student = await studentService.createStudent(payload);
+
+            return res.status(201).json({
                 success: true,
-                applicantPatch: updatePayload,
-                message: "Profile updated successfully (stub)",
-                status: "PROFILE_UPDATED"
+                data: student,
+                message: "Student created successfully",
             });
         } catch (err) {
             next(err);
         }
     }
+
+    // async updateStudentByAdmin(req, res, next) {
+    //     try {
+    //         const { studentId } = req.params; // Matches /:studentId in router
+    //         const updatedStudent = await studentService.updateStudent(studentId, req.body);
+
+    //         return res.status(200).json({
+    //             success: true,
+    //             data: updatedStudent,
+    //             message: "Student updated successfully"
+    //         });
+    //     } catch (err) {
+    //         next(err);
+    //     }
+    // }
 
     async getAllStudents(req, res, next) {
         try {
-            const page = +req.query.page || 1;
-            const limit = +req.query.limit || 10;
+            const { page, limit, batch } = req.query;
+            const result = await studentService.getAllStudents({ page, limit, batch });
 
-            res.json({
-                success: true,
-                data: [
-                    { _id: "1", name: "Student A", status: "ACTIVE" },
-                    { _id: "2", name: "Student B", status: "ACTIVE" }
-                ],
-                page,
-                limit,
-                message: 'getAllStudents success (stub)',
-                status: 'TEST_GET_ALL_STUDENTS'
+            return res.status(200).json({
+                data: result,
+                message: "All Students Profile"
             });
         } catch (err) {
             next(err);
@@ -56,11 +64,12 @@ class StudentController {
 
     async getStudentDetail(req, res, next) {
         try {
-            const { studentId } = req.params;
+            const  studentId  = req.params?.studentId;
+            const student = await studentService.getStudentById(studentId);
             res.json({
                 success: true,
-                message: 'getStudentDetail by admin (stub)',
-                data: { _id: studentId || "stub_id", name: "Stub Student" },
+                message: 'getStudentDetail by admin',
+                student,
                 status: 'TEST_GET_STUDENT_DETAIL'
             });
         } catch (err) {
@@ -68,20 +77,8 @@ class StudentController {
         }
     }
 
-    async updateStudentByAdmin(req, res, next) {
-        try {
-            res.json({
-                success: true,
-                message: 'updateStudentByAdmin stub',
-                data: null,
-                status: 'TEST_UPDATE_STUDENT_BY_ADMIN'
-            });
-        } catch (err) {
-            next(err);
-        }
-    }
-
     async deleteStudentByAdmin(req, res, next) {
+        // TODO: Complete this once all dependencies has been clear
         try {
             const { studentId } = req.params;
             const reason = req.body.reason || "No reason provided";

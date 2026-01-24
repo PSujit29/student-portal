@@ -75,7 +75,7 @@ class ProfileController {
             const { userId } = req.params;
             const body = req.body || {};
 
-            const updatePatch = await courseService.updateProfileByAdmin(userId, body);
+            const updatePatch = await profileService.updateProfileByAdmin(userId, body);
 
             return res.status(200).json({
                 data: updatePatch,

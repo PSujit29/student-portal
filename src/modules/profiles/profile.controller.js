@@ -86,7 +86,8 @@ class ProfileController {
     }
 
     async viewStudentProfile(req, res, next) {
-        
+        //todo: come here after student model haas been correctly implemented.
+
     }
 }
 

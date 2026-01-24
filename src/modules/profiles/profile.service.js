@@ -56,11 +56,23 @@ class ProfileService {
 
 		return updatePatch;
 	}
-
 	async updateProfileByAdmin(userId, patch = {}) {
-		const profile = await ProfileModel.findOne({ userId: userId });
-		await this.getProfileById(profile.profileId)
-		return await this.updateProfile(profile.profileId, patch)
+		if (!userId) {
+			const error = new Error("User id is required");
+			error.code = 400;
+			error.status = "USER_ID_REQUIRED";
+			throw error;
+		}
+
+		const profile = await ProfileModel.findOne({ userId });
+		if (!profile) {
+			const error = new Error("Profile not found for this user");
+			error.code = 404;
+			error.status = "PROFILE_NOT_FOUND_FOR_USER";
+			throw error;
+		}
+
+		return this.updateProfile(profile._id, patch);
 	}
 
 	async getAllProfiles({ page = 1, limit = 10 } = {}) {

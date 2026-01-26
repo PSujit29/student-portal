@@ -52,6 +52,12 @@ const AudienceType = {
     COURSE: "course", // users related to a specific course
     SPECIFIC_USERS: "specific_users", // explicit list of userIds
 }
+const Designation = {
+    PROFESSOR: "professor",
+    LECTURER: "lecturer",
+    COORDINATOR: "coordinator",
+    HOD: "hod"
+};
 
 const CourseStatus = {
     ACTIVE: "active",
@@ -88,4 +94,5 @@ module.exports = {
     CourseCategory,
     EnrollmentStatus,
     TransferStatus,
+    Designation
 }

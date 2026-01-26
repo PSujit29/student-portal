@@ -1,8 +1,33 @@
-const CourseModel = require("./course.model");
-const { CourseStatus } = require("../../shared/utils/constants");
+const FacultyModel = require("./faculty.model");
+const ProfileModel = require("../profiles/profile.model")
+class FacultyService {
 
-class CourseService {
-	async listCourses({ page = 1, limit = 10, status } = {}) {
+	async createFaculty(payload = {}) {
+		const { userId, department, assignedCourses, designation, officeHours, qualifications, status } = payload;
+
+		const existing = await FacultyModel.findOne({ userId });
+		if (existing) {
+			throw { code: 409, message: "Faculty already exists", status: "FACULTY_ALREADY_EXISTS" };
+		}
+
+		const facultyData = {
+			userId,
+			department,
+			designation,
+			status: status || 'active'
+		};
+
+		//optional fields
+		if (assignedCourses) facultyData.assignedCourses = assignedCourses;
+		if (officeHours) facultyData.officeHours = officeHours;
+		if (qualifications) facultyData.qualifications = qualifications;
+
+
+		const faculty = await FacultyModel.create(facultyData);
+		return faculty
+	}
+
+	async listFaculties({ page = 1, limit = 10, status } = {}) {
 		const pageNumber = Number(page) || 1;
 		const pageSize = Number(limit) || 10;
 		const skip = (pageNumber - 1) * pageSize;
@@ -12,101 +37,87 @@ class CourseService {
 			filter.status = status;
 		}
 
-		const [courses, total] = await Promise.all([
-			CourseModel.find(filter).sort({ createdAt: 1 }).skip(skip).limit(pageSize),
-			CourseModel.countDocuments(filter),
+		const [faculties, total] = await Promise.all([
+			FacultyModel.find(filter).sort({ createdAt: 1 }).skip(skip).limit(pageSize).lean(),
+			FacultyModel.countDocuments(filter),
 		]);
 
 		return {
-			data: courses,
+			data: faculties,
 			page: pageNumber,
 			limit: pageSize,
 			total,
 		};
 	}
 
-	async createCourse(payload = {}) {
-		const existing = await CourseModel.findOne({ courseCode: payload.courseCode });
-		if (existing) {
-			const error = new Error("Course with this code already exists");
-			error.code = 400;
-			error.status = "COURSE_CODE_EXISTS";
-			throw error;
+	async getFacultyById(facultyId) {
+		const faculty = await FacultyModel.findById(facultyId)
+			.select('-__v') //fetch all except version 
+			.populate({
+				path: 'userId',
+				select: 'email role accountStatus lastLoginAt',
+			})
+			.lean();
+
+		if (!faculty) {
+			throw { code: 404, message: "Faculty not found", status: "FACULTY_NOT_FOUND" };
 		}
 
-		const course = await CourseModel.create({
-			courseCode: payload.courseCode,
-			courseTitle: payload.courseTitle,
-			description: payload.description,
-			creditHours: payload.creditHours,
-			status: payload.status || CourseStatus.ACTIVE,
+		// Profile is separate and linked via userId:
+		const profile = await ProfileModel.findOne({ userId: faculty.userId })
+			.select('fullName phone address profilePic bio')
+			.lean();
+
+		return {
+			...faculty,
+			profile: profile || null
+		};
+	}
+
+	async updateFaculty(userId, patch = {}) {
+		const faculty = await FacultyModel.findOne({ userId });
+		if (!faculty) {
+			throw { code: 404, message: "Faculty not found", status: "NOT_FOUND" };
+		}
+
+		if (patch.qualifications !== undefined) {
+			faculty.qualifications = patch.qualifications;
+		}
+
+		await faculty.save();
+		return faculty;
+	}
+
+
+	async updateFacultyByAdmin(userId, patch = {}) {
+		const faculty = await FacultyModel.findOne({ userId });
+		if (!faculty) {
+			throw { code: 404, message: "Faculty not found", status: "NOT_FOUND" };
+		}
+
+		const allowedFields = ["department", "designation", "status", "assignedCourses",];
+
+		allowedFields.forEach(field => {
+			if (patch[field] !== undefined) {
+				faculty[field] = patch[field];
+			}
 		});
 
-		return course;
+		await faculty.save();
+		return faculty;
+
 	}
 
-	async getCourseById(courseId) {
-		if (!courseId) {
-			const error = new Error("Course id is required");
-			error.code = 400;
-			error.status = "COURSE_ID_REQUIRED";
-			throw error;
+	async getFacultyProfile(userId) {
+		if (!userId) {
+			throw { code: 400, message: "User ID is required", status: "USER_ID_REQUIRED" };
 		}
-
-		const course = await CourseModel.findById(courseId);
-		if (!course) {
-			const error = new Error("Course not found");
-			error.code = 404;
-			error.status = "COURSE_NOT_FOUND";
-			throw error;
-		}
-
-		return course;
-	}
-
-	async updateCourse(courseId, patch = {}) {
-		await this.getCourseById(courseId);
-
-		const updatePatch = {};
-		if (patch.courseTitle) updatePatch.courseTitle = patch.courseTitle;
-		if (patch.description) updatePatch.description = patch.description;
-		if (patch.creditHours !== undefined) updatePatch.creditHours = patch.creditHours;
-		if (patch.status) updatePatch.status = patch.status;
-
-		if (Object.keys(updatePatch).length === 0) {
-			const error = new Error("Nothing to update");
-			error.code = 400;
-			error.status = "NOTHING_TO_UPDATE";
-			throw error;
-		}
-
-		await CourseModel.updateOne({ _id: courseId }, { $set: updatePatch });
-
-		return updatePatch;
-	}
-
-	async updateCourseStatus(courseId, status) {
-		if (!status) {
-			const error = new Error("Status is required");
-			error.code = 400;
-			error.status = "STATUS_REQUIRED";
-			throw error;
-		}
-
-		if (!Object.values(CourseStatus).includes(status)) {
-			const error = new Error("Invalid status value");
-			error.code = 400;
-			error.status = "INVALID_STATUS";
-			throw error;
-		}
-
-		await this.getCourseById(courseId);
-
-		await CourseModel.updateOne({ _id: courseId }, { $set: { status } });
-
-		return { status };
+		const faculty = await FacultyModel.findOne({ userId })
+			.select('department assignedCourses designation officeHours qualifications -_id')
+			.lean();
+		return { faculty };
 	}
 }
 
-module.exports = new CourseService();
+module.exports = new FacultyService();
 

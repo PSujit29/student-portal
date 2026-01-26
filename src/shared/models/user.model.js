@@ -56,26 +56,26 @@ userSchema.index(
 // Index on role for faster authorization/lookup queries
 userSchema.index({ role: 1 });
 
-// Hash password before saving if it has been modified
-userSchema.pre('save', async function (next) {
-    if (!this.isModified('password')) return next();
+// // Hash password before saving if it has been modified
+// userSchema.pre('save', async function (next) {
+//     if (!this.isModified('password')) return next();
 
-    try {
-        const salt = await bcrypt.genSalt(10);
-        this.password = await bcrypt.hash(this.password, salt);
-        next();
-    } catch (err) {
-        next(err);
-    }
-});
+//     try {
+//         const salt = await bcrypt.genSalt(10);
+//         this.password = await bcrypt.hash(this.password, salt);
+//         next();
+//     } catch (err) {
+//         next(err);
+//     }
+// });
 
 // Tie failedLoginCount to account status (simple lockout rule)
-userSchema.pre('save', function (next) {
-    if (this.failedLoginCount >= 5 && this.accountStatus === AccountStatus.ACTIVE) {
-        this.accountStatus = AccountStatus.LOCKED;
-    }
-    next();
-});
+// userSchema.pre('save', function (next) {
+//     if (this.failedLoginCount >= 5 && this.accountStatus === AccountStatus.ACTIVE) {
+//         this.accountStatus = AccountStatus.LOCKED;
+//     }
+//     next();
+// });
 
 const UserModel = mongoose.model("User", userSchema);
 

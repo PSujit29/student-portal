@@ -1,7 +1,7 @@
 const express = require('express');
 const checkLogin = require('../../shared/middlewares/auth.middleware');
 const { UserRoles } = require('../../shared/utils/constants');
-const facultyCtrl = require('./faculty.controller'); 
+const facultyCtrl = require('./faculty.controller');
 
 const facultyRouter = express.Router();
 

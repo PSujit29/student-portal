@@ -1,16 +1,30 @@
-
+const facultyService = require('./faculty.service')
 
 class FacultyController {
+    // { populate course
+
+    //  Controller Example
+    // const faculty = await FacultyModel.findById(id).populate('assignedCourses');
+
+    // The resulting JSON will look like this:
+    // {
+    //   "employeeCode": "FAC101",
+    //   "assignedCourses": [
+    //      { "courseCode": "CSC109", "courseTitle": "Introduction to IT", ... }
+    //   ]
+    // }
+
+    // }
 
     async createFaculty(req, res, next) {
         try {
-            res.json({
+            const payload = req.body;
+            const faculty = await facultyService.createFaculty(payload);
+
+            return res.status(201).json({
                 success: true,
-                data: {
-                    faculty: { _id: "stub_id", name: "John Doe", status: "ACTIVE" }
-                },
-                message: 'getMyProfile stub',
-                status: 'TEST_GET_MY_PROFILE'
+                data: faculty,
+                message: "Faculty created successfully",
             });
         } catch (err) {
             next(err);
@@ -19,19 +33,13 @@ class FacultyController {
 
     async getAllFaculty(req, res, next) {
         try {
-            const page = +req.query.page || 1;
-            const limit = +req.query.limit || 10;
+            const { page, limit } = req.query;
+            const result = await facultyService.listFaculties({ page, limit });
 
-            res.json({
+            return res.status(200).json({
                 success: true,
-                data: [
-                    { _id: "1", name: "Faculty A", status: "ACTIVE" },
-                    { _id: "2", name: "Faculty B", status: "ACTIVE" }
-                ],
-                page,
-                limit,
-                message: 'getAllFaclulty success (stub)',
-                status: 'TEST_GET_ALL_FACULTY'
+                data: result,
+                message: "All Faculties Profile"
             });
         } catch (err) {
             next(err);
@@ -40,25 +48,28 @@ class FacultyController {
 
     async getFacultyById(req, res, next) {
         try {
-            const { facultyId } = req.params;
+            const facultyId = req.params?.facultyId;
+            const faculty = await facultyService.getFacultyById(facultyId);
             res.json({
                 success: true,
-                message: 'getFacultyDetail by admin (stub)',
-                data: { _id: facultyId || "stub_id", name: "Stub Faculty" },
-                status: 'TEST_GET_FACULTY_DETAIL'
+                message: 'getFacultyDetail by admin',
+                faculty,
+                status: 'TEST_GET_STUDENT_DETAIL'
             });
         } catch (err) {
             next(err);
         }
     }
+
     async getMyProfile(req, res, next) {
         try {
-            const { facultyId } = req.params;
-            res.json({
+            const userId = req.loggedInUser?._id;
+            const { faculty } = await facultyService.getFacultyProfile(userId);
+
+            return res.status(200).json({
                 success: true,
-                message: 'getMyProfile (stub)',
-                data: { _id: facultyId || "stub_id", name: "Stub Faculty" },
-                status: 'TEST_GET_FACULTY_DETAIL'
+                faculty,
+                message: "Your Faculty Profile"
             });
         } catch (err) {
             next(err);
@@ -67,26 +78,31 @@ class FacultyController {
 
     async updateMyProfile(req, res, next) {
         try {
+            const userId = req.loggedInUser?._id;
             const updatePayload = req.body || {};
-            res.json({
+
+            const updatedFaculty = await facultyService.updateFaculty(userId, updatePayload);
+
+            return res.status(200).json({
                 success: true,
-                applicantPatch: updatePayload,
-                message: "Profile updated successfully (stub)",
-                status: "PROFILE_UPDATED"
+                data: updatedFaculty,
+                message: "Faculty updated successfully"
             });
+
         } catch (err) {
             next(err);
         }
     }
-    
+
     async updateFacultyByAdmin(req, res, next) {
         try {
-            const updatePayload = req.body || {};
-            res.json({
+            const { facultyId } = req.params;
+            const updatedFaculty = await facultyService.updateFaculty(facultyId, req.body);
+
+            return res.status(200).json({
                 success: true,
-                applicantPatch: updatePayload,
-                message: "Profile updated successfully (stub)",
-                status: "PROFILE_UPDATED"
+                data: updatedFaculty,
+                message: "Faculty updated successfully"
             });
         } catch (err) {
             next(err);
@@ -94,6 +110,8 @@ class FacultyController {
     }
 
     async deleteFacultyByAdmin(req, res, next) {
+        // TODO: Complete this once all dependencies has been clear , done and dusted
+        // return in future
         try {
             const { facultyId } = req.params;
             const reason = req.body.reason || "No reason provided";

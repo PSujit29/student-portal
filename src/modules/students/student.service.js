@@ -14,7 +14,7 @@ class StudentService {
 
     async getStudentById(studentId) {
         const student = await StudentModel.findById(studentId)
-            .select('-__v') // Remove version key
+            .select('-__v') //fetch all except version 
             .populate({
                 path: 'userId',
                 select: 'email role accountStatus isEmailVerified lastLoginAt',
@@ -36,6 +36,8 @@ class StudentService {
         };
     }
 
+    //todo: come in future to decide updation is posible or not
+    // if yes, uncomment else remove
     // async updateProfileByAdmin(userId, patch = {}) {
     //     const student = await StudentModel.findOne({ userId });
     //     if (!student) {
@@ -75,12 +77,6 @@ class StudentService {
 
     async createStudent(payload = {}) {
         const { userId, programme, batch, currentSemester, status, expectedGraduationDate } = payload;
-
-        // Basic checks (TODO: later push these to Joi validation)
-        if (!userId || !programme || !batch) {
-            throw { code: 400, message: "Missing required fields", status: "MISSING_FIELDS" };
-        }
-
 
         const existing = await StudentModel.findOne({ userId });
         if (existing) {

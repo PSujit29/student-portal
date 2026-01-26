@@ -12,13 +12,14 @@ const requireAdmin = checkLogin([UserRoles.ADMIN]);
 // initials of route:  localhost/studentportal/student/
 
 stuRouter
-    .route("/")
-    .get(requireAdmin, stuCtrl.getAllStudents)
-    .post(requireAdmin, validator(creationRules), stuCtrl.createStudentByAdmin);
-
-stuRouter
     .route("/me")
     .get(requireStudent, stuCtrl.getMyStudentProfile)
+
+stuRouter
+    .route("/")
+    .post(requireAdmin, validator(creationRules), stuCtrl.createStudentByAdmin)
+    .get(requireAdmin, stuCtrl.getAllStudents);
+
 
 stuRouter
     .route("/:studentId")

@@ -1,3 +1,7 @@
+const mongoose = require("mongoose");
+const { createBaseSchema } = require("../../shared/models/base.model");
+const { Programme, Designation, Status } = require("../../shared/utils/constants");
+
 const facultySchema = createBaseSchema({
     userId: {
         type: mongoose.Types.ObjectId,
@@ -5,33 +9,29 @@ const facultySchema = createBaseSchema({
         required: true,
         unique: true,
     },
-    employeeCode: {
+
+    department: [{
         type: String,
         required: true,
-        unique: true,
+        enum: Object.values(Programme), // e.g  "CSIT", "BIT", "BCA"
         trim: true,
-    },
-    department: {
-        type: String,
-        required: true,
-        trim: true,
-    },
+    }],
+
+    assignedCourses: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Course', 
+    }],
+    
     designation: {
-        type: String, // e.g., "Assistant Professor", "Dean"
+        type: String,
+        enum: Object.values(Designation),
         required: true,
         trim: true,
     },
-    // --- MVP ADDITIONS FOR STUDENT INTERACTION ---
-    officeLocation: {
-        type: String, // e.g., "Building B, Room 402"
-        required: true,
-    },
+
     officeHours: {
         type: String, // Text-based for MVP (e.g., "Mon/Wed 2-4 PM")
     },
-    researchInterests: [{
-        type: String, // Helps students find mentors
-    }],
     qualifications: [{
         type: String, // e.g., "PhD in Computer Science"
     }],
@@ -45,3 +45,7 @@ const facultySchema = createBaseSchema({
 
 facultySchema.index({ department: 1 });
 facultySchema.index({ researchInterests: 1 }); // Index for student searches
+
+const FacultyModel = mongoose.model("Faculty", facultySchema)
+
+module.exports = FacultyModel

@@ -1,7 +1,4 @@
-const { Status } = require("../../shared/utils/constants");
 const profileService = require("./profile.service");
-const UserModel = require("../../shared/models/user.model");
-const errorHandler = require("../../shared/middlewares/error.middleware");
 
 class ProfileController {
     //route: studentportal/profile/
@@ -15,6 +12,7 @@ class ProfileController {
             const result = await profileService.viewProfile(userId);
 
             return res.status(200).json({
+                success: true,
                 data: result.data,
                 messsage: "Your Profile"
             });
@@ -25,13 +23,13 @@ class ProfileController {
 
     async updateMyProfile(req, res, next) {
         try {
-            const { userId } = req.loggedInUser;
+            const userId = req.loggedInUser?._id;
             if (!userId) {
                 throw { code: 404, message: "User not found" }
             }
             const body = req.body || {};
 
-            const updatePatch = await courseService.updateProfile(userId, body);
+            const updatePatch = await profileService.updateProfile(userId, body);
 
             return res.status(200).json({
                 data: updatePatch,
@@ -56,6 +54,19 @@ class ProfileController {
         }
     }
 
+    async createUserProfile(req, res, next) {
+        try {
+            const payload = req.body || {};
+            const profile = await profileService.createProfile(payload);
+
+            return res.status(201).json({
+                data: profile,
+            });
+        } catch (err) {
+            next(err);
+        }
+    }
+
     async getUserProfileByAdmin(req, res, next) {
         try {
             const { userId } = req.params;
@@ -70,25 +81,28 @@ class ProfileController {
         }
     }
 
-    async updateUserProfileByAdmin(req, res, next) {
-        try {
-            const { userId } = req.params;
-            const body = req.body || {};
+    // TODO: (admin updation) later add / improvise this to moderation
+    // async updateUserProfileByAdmin(req, res, next) {
+    //     try {
+    //         const { userId } = req.params;
+    //         const body = req.body || {};
 
-            const updatePatch = await profileService.updateProfileByAdmin(userId, body);
+    //         const updatePatch = await profileService.updateProfileByAdmin(userId, body);
 
-            return res.status(200).json({
-                data: updatePatch,
-            });
-        } catch (err) {
-            next(err);
-        }
-    }
+    //         return res.status(200).json({
+    //             data: updatePatch,
+    //         });
+    //     } catch (err) {
+    //         next(err);
+    //     }
+    // }
 
+    //todo: come here after student model haas been correctly implemented.
     async viewStudentProfile(req, res, next) {
-        //todo: come here after student model haas been correctly implemented.
 
     }
+
+
 }
 
 module.exports = new ProfileController()

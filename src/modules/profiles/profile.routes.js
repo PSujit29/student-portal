@@ -2,20 +2,27 @@ const profileRouter = require("express").Router();
 const profileCtrl = require("./profile.controller");
 const checkLogin = require("../../shared/middlewares/auth.middleware");
 const { UserRoles } = require("../../shared/utils/constants");
+const { updationRules, creationRules } = require("./profile.validation");
+const bodyValidator = require("../../shared/middlewares/validate.middleware");
+const requireAdmin = checkLogin([UserRoles.ADMIN]);
 
 // student + faculty view and update profile
 profileRouter.route("/me")
     .get(checkLogin(), profileCtrl.getMyProfile)
-    .put(checkLogin([UserRoles.STUDENT, UserRoles.FACULTY]), profileCtrl.updateMyProfile);
+    .patch(checkLogin([UserRoles.STUDENT, UserRoles.FACULTY]), bodyValidator(updationRules), profileCtrl.updateMyProfile);
 
-// 2️dmin for manage everyone profiles
-profileRouter.get("/users", checkLogin([UserRoles.ADMIN]), profileCtrl.getAllProfiles);
+// Admin/Management
+profileRouter.route("/users")
+    .get(requireAdmin, profileCtrl.getAllProfiles)
+    .post(requireAdmin, bodyValidator(creationRules), profileCtrl.createUserProfile);
 
 profileRouter.route("/users/:userId")
-    .get(checkLogin([UserRoles.ADMIN]), profileCtrl.getUserProfileByAdmin)
-    .patch(checkLogin([UserRoles.ADMIN]), profileCtrl.updateUserProfileByAdmin);
+    .get(requireAdmin, profileCtrl.getUserProfileByAdmin); 
+    // TODO: Add Admin update logic if regulation (e.g. Profile Pic moderation) is needed
 
-// faculty + admin can view profiles but is read only
+// Faculty/Admin view students
+// Logic inside controller will restrict faculty to students they actually teach
 profileRouter.get("/students/:studentId", checkLogin([UserRoles.FACULTY, UserRoles.ADMIN]), profileCtrl.viewStudentProfile);
+
 
 module.exports = profileRouter;

@@ -1,6 +1,36 @@
 const ProfileModel = require("./profile.model");
 
 class ProfileService {
+
+	async createProfile(payload) {
+
+		const existing = await ProfileModel.findOne({ userId: payload.userId }).lean();
+		if (existing) {
+			const error = new Error("Profile for this user already exists");
+			error.code = 400;
+			error.status = "PROFILE_EXISTS";
+			throw error;
+		}
+
+		const profile = await ProfileModel.create({
+			userId: payload.userId,
+			fullName: payload.fullName,
+			gender: payload.gender,
+			phone: payload.phone,
+			permanentAddress: payload.permanentAddress,
+			dob: payload.dob,
+			temporaryAddress: payload.temporaryAddress || null,
+			emergencyContactName: payload.emergencyContactName || null,
+			emergencyPhone: payload.emergencyPhone || null,
+			profilePic: payload.profilePic || null,
+			bio: payload.bio || null,
+			nationality: payload.nationality || null,
+			bloodGroup: payload.bloodGroup || null,
+		});
+
+		return profile;
+	}
+
 	async viewProfile(userId = null) {
 		if (userId === null) {
 			const error = new Error("No user id attached to update");
@@ -8,13 +38,16 @@ class ProfileService {
 			error.status = "NO_USER_PPROVIDED";
 			throw error;
 		}
-		const profile = await
-			ProfileModel.findOne({ userId: userId });
+		const profile = await ProfileModel.findOne({ userId })
+			.select('-__v -createdAt -updatedAt -userId')
+			.lean();
+
 
 		return {
 			data: profile,
 		};
 	}
+
 
 	async getProfileById(profileId) {
 		if (!profileId) {
@@ -35,14 +68,19 @@ class ProfileService {
 		return profile;
 	}
 
-	async updateProfile(profileId, patch = {}) {
-		await this.getProfileById(profileId);
+	async updateProfile(userId, patch = {}) {
 
 		const updatePatch = {};
-		if (patch.phone) updatePatch.phone = patch.phone;
-		if (patch.address) updatePatch.address = patch.address;
-		if (patch.profilePic) updatePatch.profilePic = patch.profilePic;
-		if (patch.bio) updatePatch.bio = patch.bio;
+		const allowedFields = [
+			'phone', 'temporaryAddress', 'emergencyContactName',
+			'emergencyPhone', 'profilePic', 'bio', 'bloodGroup', 'nationality'
+		];
+
+		allowedFields.forEach(field => {
+			if (patch[field]) updatePatch[field] = patch[field];
+		});
+
+
 		//  cloudinary ??
 
 		if (Object.keys(updatePatch).length === 0) {
@@ -52,10 +90,11 @@ class ProfileService {
 			throw error;
 		}
 
-		await ProfileModel.updateOne({ _id: profileId }, { $set: updatePatch });
+		await ProfileModel.updateOne({ userId: userId }, { $set: updatePatch });
 
 		return updatePatch;
 	}
+
 	async updateProfileByAdmin(userId, patch = {}) {
 		if (!userId) {
 			const error = new Error("User id is required");

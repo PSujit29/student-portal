@@ -1,4 +1,3 @@
-const Joi = require("joi")
 
 const bodyValidator = (rules) => {
     return async (req, res, next) => {
@@ -21,7 +20,7 @@ const bodyValidator = (rules) => {
                 status: "VALIDATION_FAILED",
                 details: {}
             }
-            // console.log(exception)
+            console.log(exception)
             if (exception.details) {
                 exception.details.forEach(err => {
                     errorBag.details[err.context.key] = err.message;

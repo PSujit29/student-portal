@@ -36,7 +36,7 @@ class StudentService {
         };
     }
 
-    //todo: come in future to decide updation is posible or not
+    // TODO: come in future to decide updation is posible or not
     // if yes, uncomment else remove
     // async updateProfileByAdmin(userId, patch = {}) {
     //     const student = await StudentModel.findOne({ userId });

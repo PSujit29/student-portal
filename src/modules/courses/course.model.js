@@ -33,7 +33,6 @@ const courseSchema = createBaseSchema({
 
 });
 
-// Efficient filtering by course lifecycle
 courseSchema.index({ status: 1 });
 
 const CourseModel = mongoose.model("Course", courseSchema);

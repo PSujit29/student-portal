@@ -48,24 +48,32 @@ class EmailService {
     }
 
     async sendInvite(email, token, fullName) {
-        const inviteLink = `http://localhost:5173/register/:${token}`; // TODO:Update with frontend URL later
-        
+        const frontendBaseUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+        const inviteLink = `${frontendBaseUrl}/complete-onboarding?token=${token}`;
+
         const message = `
-        <h1>Hello, ${fullName}!</h1>
-        <p>You have been invited to join the Teacher's Side of student portal platform.</p>
-        <p>Please click the link below to complete your registration:</p>
-        <a href="${inviteLink}">Accept Invite</a>
-        <p>This link will expire soon.</p>
+        <div style="font-family: sans-serif; line-height: 1.5;">
+            <h1>Hello, ${fullName}!</h1>
+            <p>You have been invited to join the <strong>Teacher's Portal</strong>.</p>
+            <p>Please click the button below to complete your registration:</p>
+            <a href="${inviteLink}" style="background: #4CAF50; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">
+                Complete Registration
+            </a>
+            <p style="color: #666; font-size: 0.8em; margin-top: 20px;">
+                This link will expire in 24 hours. If you did not expect this invitation, please ignore this email.
+            </p>
+        </div>
     `;
 
         return await this.sendEmail({
             to: email,
             from: smtpConfig.from,
-            subject: "Teacher Invitation",
+            subject: "Action Required: Complete Your Teacher Registration",
             message: message
         });
     }
-    
+
+
 }
 
 module.exports = new EmailService()

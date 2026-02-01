@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/PSujit29/student-portal#readme",
   "devDependencies": {
+    "eslint": "^9.39.2",
     "nodemon": "^3.1.11"
   },
   "dependencies": {

@@ -13,15 +13,16 @@ const facultySchema = createBaseSchema({
     department: [{
         type: String,
         required: true,
-        enum: Object.values(Programme), // e.g  "CSIT", "BIT", "BCA"
+        enum: Object.values(Programme), 
         trim: true,
     }],
 
     assignedCourses: [{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Course', 
+        ref: 'Course',
+        default:null,
     }],
-    
+
     designation: {
         type: String,
         enum: Object.values(Designation),
@@ -30,12 +31,15 @@ const facultySchema = createBaseSchema({
     },
 
     officeHours: {
-        type: String, // Text-based for MVP (e.g., "Mon/Wed 2-4 PM")
+        type: String,
+        default:null,
     },
-    qualifications: [{
-        type: String, // e.g., "PhD in Computer Science"
+
+    qualification: [{
+        type: String,
+        default:null,
     }],
-    // ----------------------------------------------
+
     status: {
         type: String,
         enum: Object.values(Status),
@@ -44,7 +48,6 @@ const facultySchema = createBaseSchema({
 });
 
 facultySchema.index({ department: 1 });
-facultySchema.index({ researchInterests: 1 }); // Index for student searches
 
 const FacultyModel = mongoose.model("Faculty", facultySchema)
 

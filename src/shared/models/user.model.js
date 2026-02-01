@@ -11,16 +11,16 @@ const userSchema = createBaseSchema({
         lowercase: true,
         validate: {
             validator: function (value) {
-                // Simple email format validation
                 return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
             },
             message: 'Invalid email format',
         },
+        unique: true,
     },
     password: {
         type: String,
-        optional:true,
-        default:null,
+        optional: true,
+        default: null,
         minlength: 8,
     },
     role: {

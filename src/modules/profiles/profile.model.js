@@ -1,6 +1,5 @@
 const mongoose = require('mongoose');
 const { createBaseSchema } = require('../../shared/models/base.model');
-const UserModel = require('../../shared/models/user.model');
 const { Genders, BloodGroups } = require('../../shared/utils/constants');
 
 const profileSchema = createBaseSchema({
@@ -49,7 +48,7 @@ const profileSchema = createBaseSchema({
         match: /^\+?[0-9]{7,15}$/,
         default: null,
     },
-    address: {
+    temporaryAddress: {
         type: String,
         minlength: 1,
         maxlength: 100,

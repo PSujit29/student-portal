@@ -150,4 +150,4 @@ yarn.lock
 package-lock.json
 public/uploads/
 
-*.txt
+hint.md

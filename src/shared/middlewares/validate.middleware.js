@@ -26,6 +26,7 @@ const bodyValidator = (rules) => {
                     errorBag.details[err.context.key] = err.message;
                 });
             }
+            // console.log(errorBag)
 
             next(errorBag)
         }

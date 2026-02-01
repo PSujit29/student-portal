@@ -19,7 +19,8 @@ const userSchema = createBaseSchema({
     },
     password: {
         type: String,
-        required: true,
+        optional:true,
+        default:null,
         minlength: 8,
     },
     role: {

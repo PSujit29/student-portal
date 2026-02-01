@@ -46,6 +46,26 @@ class EmailService {
             throw { code: 500, message: "email sending error", status: "MAIL_SEND_ERR" }
         }
     }
+
+    async sendInvite(email, token, fullName) {
+        const inviteLink = `http://localhost:5173/register/:${token}`; // TODO:Update with frontend URL later
+        
+        const message = `
+        <h1>Hello, ${fullName}!</h1>
+        <p>You have been invited to join the Teacher's Side of student portal platform.</p>
+        <p>Please click the link below to complete your registration:</p>
+        <a href="${inviteLink}">Accept Invite</a>
+        <p>This link will expire soon.</p>
+    `;
+
+        return await this.sendEmail({
+            to: email,
+            from: smtpConfig.from,
+            subject: "Teacher Invitation",
+            message: message
+        });
+    }
+    
 }
 
 module.exports = new EmailService()

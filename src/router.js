@@ -5,11 +5,13 @@ const courseRouter = require("./modules/courses/course.routes.js")
 const profileRouter = require("./modules/profiles/profile.routes.js")
 const studentRouter = require("./modules/students/student.routes.js")
 const facultyRouter = require("./modules/faculty/faculty.routes.js")
+const inviteRouter = require("./modules/invitation/invitation.routes.js")
 
 router.use("/auth", authRouter)
 router.use("/profile", profileRouter)
 router.use("/course", courseRouter)
 router.use("/students", studentRouter)
 router.use("/faculty", facultyRouter)
+router.use("/invite", inviteRouter)
 
 module.exports = router

@@ -1,4 +1,4 @@
-const invitationService = require("./invitation.services")
+const invitationService = require("./invitation.service")
 
 class InvititationController {
 

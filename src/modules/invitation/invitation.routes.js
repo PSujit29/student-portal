@@ -16,7 +16,7 @@ inviteRouter.route('/')
 
 inviteRouter.route('/:token')
     .get(onboardingLimiter, inviterCtrl.verifyToken) //verify token
-    .post(onboardingLimiter, bodyValidator(registerRules), inviterCtrl.completeTeacherOnboarding) //register form hamdle
+    .post(onboardingLimiter, bodyValidator(registerRules), inviterCtrl.completeOnboarding) //register form hamdle
     .delete(requireAdmin, inviterCtrl.revokeInvitation); // Cancel invite
 
 

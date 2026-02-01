@@ -56,7 +56,7 @@ class InvititationController {
     }
 
 
-    async completeTeacherOnboarding(req, res, next) {
+    async completeOnboarding(req, res, next) {
         try {
             const { token } = req.params;
             const details = req.body;

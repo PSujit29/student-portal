@@ -15,7 +15,6 @@ const userSchema = createBaseSchema({
             },
             message: 'Invalid email format',
         },
-        unique: true,
     },
     password: {
         type: String,

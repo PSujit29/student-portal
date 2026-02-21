@@ -8,7 +8,42 @@ const { generateActivationToken } = require('../../shared/utils/token.util');
 const ProfileModel = require('../profiles/profile.model');
 
 class AuthService {
+
+	async getActivationTemplate(name, email, token) {
+		const activationLink = `${FRONTEND_URL}/activation-redirect.html?token=${token}`;
+
+		return `
+        <h2>Activate your account</h2>
+        <p>Hello ${name || email},</p>
+        <p>Click the button below to activate your account:</p>
+        <a href="${activationLink}" 
+           style="padding:10px 20px;background:#007bff;color:#fff;text-decoration:none;">
+           Activate Account
+        </a>
+        <p>This link expires in 15 minutes.</p>
+    `;
+	};
+	
+	async sendActivationEmail(user, name) {
+		//separate logic to send activation email
+		try {
+			const token = generateActivationToken(user);
+			const htmlContent = await this.getActivationTemplate(name, user.email, token);
+			// await emailService.sendEmail({
+			// 	to: user.email,
+			// 	subject: 'Activate your account',
+			// 	message: htmlContent,
+			// });
+			console.log(token); //TODO: only for dev purpose to remove later
+			// console.log(`Activation email sent to ${user.email}`);
+		} catch (error) {
+			console.error('Failed to send activation email:', error);
+			throw new Error('EMAIL_SEND_FAILURE');
+		}
+	}
+
 	async register({ name, email, password }) {
+		// 1. Validation Logic
 		const existingUser = await UserModel.findOne({ email, isDeleted: false });
 		if (existingUser) {
 			throw {
@@ -18,7 +53,7 @@ class AuthService {
 			};
 		}
 
-		const hashedPassword = bcrypt.hashSync(password);
+		const hashedPassword = bcrypt.hashSync(password, 10);
 
 		const user = new UserModel({
 			email,
@@ -27,32 +62,12 @@ class AuthService {
 
 		const savedUser = await user.save();
 
-		// create empty profile immediately
 		await ProfileModel.create({
 			userId: savedUser._id,
 			fullName: name || '',
 		});
 
-		const token = generateActivationToken(savedUser);
-
-		const activationLink = `${FRONTEND_URL}/activation-redirect.html?token=${token}`;
-
-		const html = `
-	<h2>Activate your account</h2>
-	<p>Hello ${name || email},</p>
-	<p>Click the button below to activate your account:</p>
-	<a href="${activationLink}"
-		 style="padding:10px 20px;background:#007bff;color:#fff;text-decoration:none;">
-		 Activate Account
-	</a>
-	<p>This link expires in 15 minutes.</p>
-`;
-
-		await emailService.sendEmail({
-			to: email,
-			subject: 'Activate your account',
-			message: html,
-		});
+		await this.sendActivationEmail(savedUser, name);
 
 		return {
 			user: savedUser,
@@ -113,7 +128,7 @@ class AuthService {
 		const accessToken = jwt.sign(
 			{ sub: user._id, type: 'Bearer' },
 			AppConfig.jwtSecret,
-			{ expiresIn: '30d' },
+			{ expiresIn: '60d' },
 		);
 
 		return { accessToken };

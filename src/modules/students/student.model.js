@@ -31,19 +31,10 @@ const studentSchema = createBaseSchema({
         max: 8,
         default: 1,
     },
-    batch: {
-        type: String,
+    batch: { // current year of admission
+        type: Number,
         required: true,
-        trim: true,
-        minlength: 4,
-        maxlength: 25,
-        validate: {
-            validator: function (value) {
-                // allow patterns like "2023", "2023A", "2023-CSIT"
-                return /^[0-9]{4}[A-Za-z0-9\-]*$/.test(value);
-            },
-            message: 'Invalid batch format',
-        },
+        immutable: true,
     },
     expectedGraduationDate: {
         type: Date,

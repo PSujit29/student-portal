@@ -1,13 +1,13 @@
 const invitationService = require("./invitation.service")
 
-class InvititationController {
+class InvitationController {
 
     async createInvitation(req, res, next) {
         try {
-            const teacherData = req.body;
+            const initialData = req.body;
             const invitedBy = req.loggedInUser?._id;
 
-            const invitation = await invitationService.createTeacherInvitaion(teacherData, invitedBy);
+            const invitation = await invitationService.createInvitation(initialData, invitedBy);
 
             return res.status(201).json({
                 success: true,
@@ -55,17 +55,16 @@ class InvititationController {
         }
     }
 
-
     async completeOnboarding(req, res, next) {
         try {
             const { token } = req.params;
             const details = req.body;
 
-            const registrationResult = await invitationService.handleTeacherOnboarding(token, details)
+            const registrationResult = await invitationService.handleOnboarding(token, details)
 
             return res.status(201).json({
                 success: true,
-                message: "Teacher registered successfully.",
+                message: "Onboarding Completed Successfully.",
                 data: registrationResult
             });
 
@@ -75,8 +74,8 @@ class InvititationController {
     }
 
     async revokeInvitation(req, res, next) {
-
+        //TODO: implement cancel invite
     }
 }
 
-module.exports = new InvititationController()
+module.exports = new InvitationController()

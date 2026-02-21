@@ -2,31 +2,44 @@ const crypto = require('crypto')
 const bcrypt = require('bcryptjs')
 const InvitationModel = require('./invitation.model')
 const emailService = require('../../shared/utils/email.util');
+const authService = require('../auth/auth.service');
 const UserModel = require('../../shared/models/user.model');
 const FacultyModel = require('../faculty/faculty.model');
 const ProfileModel = require('../profiles/profile.model');
+const StudentModel = require('../students/student.model')
 const { Designation, UserRoles } = require('../../shared/utils/constants');
 const { default: mongoose } = require('mongoose');
 
 class InvitationService {
 
-    async createTeacherInvitaion({ email, fullName, department }, invitedBy) {
+    async createInvitation({ email, fullName, department, role, programme }, invitedBy) {
 
-        const existingInvite = await InvitationModel.findOne({ email });
+        const existingInvite = await InvitationModel.findOne({ email, role, status: 'Pending' });
         if (existingInvite) {
-            throw { "error": "ALREADY_EXISTS" };
+            throw new Error("INVITATION_ALREADY_EXISTS");
         }
 
         const rawToken = crypto.randomBytes(32).toString('hex');
         const hashedToken = crypto.createHash('sha256').update(rawToken).digest('hex')
-        const deptArray = Array.isArray(department) ? department : [department];
+
+        const deptArray = Array.isArray(department) ? department : (department ? [department] : []);
+
+        if (role === UserRoles.STUDENT && !programme) {
+            throw new Error("PROGRAMME_REQUIRED_FOR_STUDENT");
+        }
+        if (role === UserRoles.FACULTY && deptArray.length === 0) {
+            throw new Error("DEPARTMENT_REQUIRED_FOR_FACULTY");
+        }
+
 
         const newInvitation = await InvitationModel.create({
             email,
             token: hashedToken,
             fullName,
-            deptArray,
-            invitedBy: invitedBy
+            department: role === UserRoles.STUDENT ? null : deptArray, 
+            role,
+            programme: role === UserRoles.STUDENT ? programme : null,
+            invitedBy
         })
 
         // emailService.sendInvite(email, rawToken).catch(err => {
@@ -34,6 +47,74 @@ class InvitationService {
         // });
 
         return { ...newInvitation.toObject(), rawToken };
+    }
+
+    async handleOnboarding(token, details) {
+
+        const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+        const invitation = await InvitationModel.findOne({
+            token: hashedToken,
+            expiresAt: { $gt: new Date() },
+            status: 'Pending'
+        });
+
+        if (!invitation) {
+            throw new Error("Invalid URL onboarding");
+        }
+
+        const registrationData = {
+            user: {
+                email: invitation.email,
+                password: details.password
+            },
+            profile: {
+                fullName: invitation.fullName,
+                gender: details.gender,
+                phone: details.phone,
+                permanentAddress: details.address,
+                dob: details.dob
+            },
+            invitationId: invitation._id
+        }
+
+        if (invitation.role === UserRoles.FACULTY) {
+
+            registrationData.faculty = {
+                designation: Designation.LECTURER,
+                department: invitation.department,
+            }
+
+            registrationData.student = null;
+
+        }
+        else if (invitation.role === UserRoles.STUDENT) {
+
+            registrationData.student = {
+                programme: invitation.programme,
+                batch: new Date().getFullYear(),
+                currentSemester: 1,
+                registrationNumber: `${invitation.programme.toUpperCase()}-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`
+            };
+
+            registrationData.faculty = null;
+
+        }
+        else throw new Error("Unsupported role for onboarding");
+
+
+        const registeredUser = await this.registerInDatabase(registrationData);
+
+        // try {
+        //     await authService.sendActivationEmail(registeredUser, invitation.fullName);
+        // } catch (err) {
+        //     console.error("Failed to send activation email:", err);
+        // }
+
+        return {
+            message: "Onboarding completed successfully. Check your email to activate your account.",
+            id: registeredUser._id,
+        };
     }
 
     async verifyInvitation(token) {
@@ -52,40 +133,9 @@ class InvitationService {
         return {
             email: invitation.email,
             fullName: invitation.fullName,
-            department: invitation.department
-        };
-    }
-
-    async handleTeacherOnboarding(token, fullTeacherDetails) {
-
-        const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
-
-        const invitation = await InvitationModel.findOne({
-            token: hashedToken,
-            expiresAt: { $gt: new Date() },
-            status: 'Pending'
-        });
-
-        if (!invitation) {
-            throw new Error("Invalid URL onboarding");
-        }
-
-        let { password, gender, phone, address, dob, designation } = fullTeacherDetails;
-
-
-        //some data are assigned source of truth (database as invitation fetch)
-        const registrationPayload = {
-            user: { email: invitation.email, password },
-            profile: { fullName: invitation.fullName, gender, phone, address, dob },
-            faculty: { department: invitation.department, designation: designation || Designation.LECTURER },
-            invitationId: invitation._id,
-        }
-        //cal register service function to individually register them
-        const registeredTeacher = await this.registerTeacher(registrationPayload);
-
-        return {
-            message: "Teacher registered successfully",
-            id: registeredTeacher._id,
+            department: invitation.department || [],
+            role: invitation.role,
+            programme: invitation.programme || null,
         };
     }
 
@@ -94,22 +144,22 @@ class InvitationService {
         const pageSize = Number(limit) || 10;
         const skip = (pageNumber - 1) * pageSize;
 
-        const [invitaions, total] = await Promise.all([
+        const [invitations, total] = await Promise.all([
             InvitationModel.find({}).sort({ createdAt: 1 }).skip(skip).limit(pageSize),
             InvitationModel.countDocuments({}),
         ]);
 
         return {
-            data: invitaions,
+            data: invitations,
             page: pageNumber,
             limit: pageSize,
             total,
         };
     }
 
-    async registerTeacher(details) {
+    async registerInDatabase(details) {
 
-        const { user, profile, faculty, invitationId } = details;
+        const { user, profile, faculty, student, invitationId } = details;
 
         const session = await mongoose.startSession();
 
@@ -135,7 +185,7 @@ class InvitationService {
                 const [newUser] = await UserModel.create([{
                     ...user,
                     password: hashedPass,
-                    role: UserRoles.FACULTY,
+                    role: invitation.role,
                 }], { session });
 
                 await ProfileModel.create([{
@@ -143,11 +193,18 @@ class InvitationService {
                     ...profile
                 }], { session })
 
-                await FacultyModel.create([{
-                    userId: newUser._id,
-                    ...faculty,
-                }], { session });
-
+                if (faculty !== null) {
+                    await FacultyModel.create([{
+                        userId: newUser._id,
+                        ...faculty,
+                    }], { session });
+                }
+                if (student !== null) {
+                    await StudentModel.create([{
+                        userId: newUser._id,
+                        ...student,
+                    }], { session });
+                }
                 return newUser;
             })
             return result;
@@ -159,5 +216,6 @@ class InvitationService {
             await session.endSession();
         }
     }
+
 }
 module.exports = new InvitationService()

@@ -1,11 +1,15 @@
 const mongoose = require("mongoose");
 const { createBaseSchema } = require("../../shared/models/base.model");
+const { UserRoles, Programme } = require("../../shared/utils/constants");
+const { required } = require("joi");
 
 const invitationSchema = createBaseSchema({
     email: { type: String, required: true, lowercase: true, trim: true, unique: true },
     token: { type: String, required: true, unique: true },
     fullName: { type: String, required: true },
+    role: { type: String, enum: Object.values(UserRoles), required: true },
     department: [{ type: String }],
+    programme: { type: String, enum: Object.values(Programme), default: null },
     status: {
         type: String,
         enum: ['Pending', 'Accepted', 'Expired'],
